@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zid App Platform
 
-## Getting Started
+SaaS Merchant & Mobile App Management Platform built with Next.js.
 
-First, run the development server:
+## Features
+
+- Admin & Merchant dashboards
+- English (LTR) + Arabic (RTL) via `next-intl`
+- Session-based authentication with RBAC
+- Mock Zid integration layer (ready for real API)
+- Supabase-ready PostgreSQL schema
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local
+# Fill Supabase keys in .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Demo accounts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role     | Email                   | Password      |
+|----------|-------------------------|---------------|
+| Admin    | admin@zidplatform.com   | Password123!  |
+| Merchant | merchant@example.com    | Password123!  |
 
-## Learn More
+## Database
 
-To learn more about Next.js, take a look at the following resources:
+Run the full schema in Supabase SQL Editor:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+database/schema.sql
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+After the schema is applied, set `NEXT_PUBLIC_USE_MOCK_DATA=false` when you wire live queries.
 
-## Deploy on Vercel
+## Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- next-intl (EN/AR + RTL)
+- Supabase
+- React Hook Form / Zod (forms)
+- Recharts
+- Lucide icons
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Architecture
+
+```text
+YOUR PLATFORM
+     │
+ADMIN PANEL ─── MERCHANT PANEL
+     │
+YOUR BACKEND
+     │
+Zid API Layer (src/lib/zid/zidService.ts)
+     │
+    ZID
+```
