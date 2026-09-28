@@ -305,13 +305,36 @@
     },
     "videoCategories": {
       "title": "تصنيفات الفيديو",
-      "subtitle": "تصنيفات الفيديو غير متاحة حالياً.",
-      "unavailable": "غير متاح"
+      "subtitle": "نظّم الفيديوهات في تصنيفات تظهر داخل تطبيق الجوال.",
+      "listTitle": "جميع التصنيفات",
+      "addCategory": "إضافة تصنيف",
+      "nameEn": "الاسم (إنجليزي)",
+      "nameAr": "الاسم (عربي)",
+      "nameEnPlaceholder": "مثلاً: Explore",
+      "nameArPlaceholder": "مثال: اكتشف",
+      "nameRequired": "اسم التصنيف مطلوب",
+      "deleteTitle": "حذف التصنيف؟",
+      "deleteHint": "ستبقى الفيديوهات موجودة لكن بدون ربط بهذا التصنيف."
     },
     "videos": {
       "exploreTitle": "فيديوهات (اكتشف الآن)",
+      "exploreSubtitle": "إدارة فيديوهات اكتشف الآن المعروضة في تطبيقك.",
       "experiencesTitle": "فيديوهات (تجارب العملاء)",
-      "unavailable": "وحدة الفيديو غير متاحة حالياً."
+      "experiencesSubtitle": "إدارة فيديوهات تجارب العملاء المعروضة في تطبيقك.",
+      "listTitle": "جميع الفيديوهات",
+      "addVideo": "إضافة فيديو",
+      "titleEn": "العنوان (إنجليزي)",
+      "titleAr": "العنوان (عربي)",
+      "titleEnPlaceholder": "مثلاً: Store Tour",
+      "titleArPlaceholder": "مثال: جولة في المتجر",
+      "titleRequired": "عنوان الفيديو مطلوب",
+      "videoUrl": "رابط الفيديو",
+      "thumbnailUrl": "رابط الصورة المصغرة",
+      "category": "التصنيف",
+      "noCategory": "بدون تصنيف",
+      "open": "فتح",
+      "deleteTitle": "حذف الفيديو؟",
+      "deleteHint": "سيتم إزالة هذا الفيديو من محتوى التطبيق."
     },
     "notices": {
       "title": "الإشعارات العامة",

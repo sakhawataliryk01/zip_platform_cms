@@ -6,15 +6,8 @@ import { EmptyState } from "@/components/shared/empty-state";
 
 export function MerchantCmsPageShell({
   namespace,
-  unavailable = false,
 }: {
-  namespace:
-    | "sections"
-    | "supervisors"
-    | "banners"
-    | "videoCategories"
-    | "notices";
-  unavailable?: boolean;
+  namespace: "sections" | "supervisors" | "banners" | "notices";
 }) {
   const t = useTranslations(`merchant.${namespace}`);
   const tCommon = useTranslations("common");
@@ -26,10 +19,7 @@ export function MerchantCmsPageShell({
         <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </CardHeader>
       <CardContent>
-        <EmptyState
-          title={unavailable ? tCommon("unavailable") : tCommon("empty")}
-          description={t("subtitle")}
-        />
+        <EmptyState title={tCommon("empty")} description={t("subtitle")} />
       </CardContent>
     </Card>
   );
