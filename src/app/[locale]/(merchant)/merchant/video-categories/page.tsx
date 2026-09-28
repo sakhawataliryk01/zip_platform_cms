@@ -1,5 +1,5 @@
-import { MerchantCmsPageShell } from "@/components/merchant/cms-page-shell";
+import { VideoCategoriesManager } from "@/components/merchant/video-categories-manager";
 
 export default function MerchantVideoCategoriesPage() {
-  return <MerchantCmsPageShell namespace="videoCategories" unavailable />;
+  return <VideoCategoriesManager />;
 }

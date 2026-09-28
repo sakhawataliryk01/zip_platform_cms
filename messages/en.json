@@ -305,13 +305,36 @@
     },
     "videoCategories": {
       "title": "Video Categories",
-      "subtitle": "Video categories are not available yet.",
-      "unavailable": "Unavailable"
+      "subtitle": "Organize videos into categories shown in your mobile app.",
+      "listTitle": "All Categories",
+      "addCategory": "Add Category",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "nameEnPlaceholder": "e.g. Explore",
+      "nameArPlaceholder": "مثال: اكتشف",
+      "nameRequired": "Category name is required",
+      "deleteTitle": "Delete category?",
+      "deleteHint": "Videos in this category will keep their content but lose the category link."
     },
     "videos": {
       "exploreTitle": "Videos (Explore Now)",
+      "exploreSubtitle": "Manage Explore Now videos shown in your app.",
       "experiencesTitle": "Videos (Customer Experiences)",
-      "unavailable": "This video module is unavailable for now."
+      "experiencesSubtitle": "Manage customer experience videos shown in your app.",
+      "listTitle": "All Videos",
+      "addVideo": "Add Video",
+      "titleEn": "Title (English)",
+      "titleAr": "Title (Arabic)",
+      "titleEnPlaceholder": "e.g. Store Tour",
+      "titleArPlaceholder": "مثال: جولة في المتجر",
+      "titleRequired": "Video title is required",
+      "videoUrl": "Video URL",
+      "thumbnailUrl": "Thumbnail URL",
+      "category": "Category",
+      "noCategory": "No category",
+      "open": "Open",
+      "deleteTitle": "Delete video?",
+      "deleteHint": "This video will be removed from your app content."
     },
     "notices": {
       "title": "General Notices",
