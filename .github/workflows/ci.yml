@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Block malware npm script hooks
+        run: |
+          set -euo pipefail
+          if grep -E '"[^"]+"\s*:\s*"node api\.js' package.json; then
+            echo "::error file=package.json::Malware hook: npm scripts must not run api.js"
+            exit 1
+          fi
+          if [ -f api.js ]; then
+            echo "::error file=api.js::Unexpected root api.js — remove malware loader"
+            exit 1
+          fi
+          echo "PASSED: no api.js script hooks"
