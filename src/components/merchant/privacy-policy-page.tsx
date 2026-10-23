@@ -6,7 +6,7 @@ import {
   ChevronDown,
   Database,
   Eye,
-  FileShield,
+  FileLock,
   KeyRound,
   Mail,
   Scale,
@@ -32,7 +32,7 @@ const SECTION_KEYS = [
 const SECTION_ICONS = {
   overview: Eye,
   dataWeCollect: Database,
-  howWeUse: FileShield,
+  howWeUse: FileLock,
   zidIntegration: Store,
   storageSecurity: KeyRound,
   sharing: Share2,
