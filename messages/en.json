@@ -126,6 +126,7 @@
       "orderNewApp": "Order New App",
       "myStore": "My Store",
       "support": "Support",
+      "privacyPolicy": "Privacy Policy",
       "settings": "Settings",
       "myApp": "My App",
       "products": "Products",
@@ -706,6 +707,54 @@
       "tickets": {
         "title": "Support tickets API",
         "description": "This project had no prior ticketing UI. Submissions go to POST /api/merchant/support and are persisted in Supabase table support_tickets (or local .data fallback until the SQL migration is applied)."
+      }
+    },
+    "privacyPolicy": {
+      "badge": "ZidFlow Privacy",
+      "heading": "Privacy Policy",
+      "description": "This policy explains how ZidFlow collects, uses, and protects merchant and store-related data when you use the merchant dashboard and connected mobile apps.",
+      "lastUpdated": "Last updated: October 2026",
+      "contactLabel": "Privacy contact",
+      "contactMissing": "Set NEXT_PUBLIC_SUPPORT_EMAIL to show a privacy contact address.",
+      "sectionsTitle": "Policy details",
+      "sectionsSubtitle": "Expand a section to read how we handle your information.",
+      "goToSupport": "Contact Support",
+      "emailUs": "Email us",
+      "footerTitle": "Questions about privacy?",
+      "footerHint": "Reach our team through Support if you need clarification or want to request access, correction, or deletion of your data.",
+      "sections": {
+        "overview": {
+          "title": "Overview",
+          "body": "ZidFlow is a merchant platform that helps you connect Zid stores, manage app content, and deliver branded mobile experiences. We process only the information needed to operate these services for your business."
+        },
+        "dataWeCollect": {
+          "title": "Data we collect",
+          "body": "We may collect account details (name, email, business name), store connection metadata (Zid Store ID and tokens stored server-side), CMS content you upload (banners, intro posters, notices, videos), support tickets you submit, and basic technical logs needed for security and troubleshooting."
+        },
+        "howWeUse": {
+          "title": "How we use data",
+          "body": "Data is used to authenticate merchants, sync and display store content, power Flutter apps scoped to your merchant ID, process support requests, improve reliability, and meet operational or legal obligations. We do not sell your personal data."
+        },
+        "zidIntegration": {
+          "title": "Zid store integration",
+          "body": "When you connect a Zid store, access credentials are stored securely for server-side API calls. Product and order data retrieved from Zid remains scoped to your merchant account and is not mixed with other merchants."
+        },
+        "storageSecurity": {
+          "title": "Storage & security",
+          "body": "Application data is stored in Supabase (database and storage buckets such as banner and intro-posters). We use access controls, merchant-scoped records, and HTTPS. You should keep Store tokens and OAuth secrets confidential and rotate them if exposed."
+        },
+        "sharing": {
+          "title": "Sharing with third parties",
+          "body": "We share data only with service providers required to run ZidFlow (for example hosting, database, and YouTube/Google OAuth when you connect those features), or when required by law. Third-party platforms process data under their own policies."
+        },
+        "yourRights": {
+          "title": "Your rights",
+          "body": "Depending on applicable law, you may request access to, correction of, or deletion of personal data we hold about you, and you may disconnect store or YouTube integrations at any time from the dashboard. Contact us to exercise these rights."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "For privacy questions or requests, open a ticket on the Support page or email the configured support address. Include your merchant account email so we can verify ownership before making changes."
+        }
       }
     }
   },

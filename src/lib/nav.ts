@@ -21,7 +21,8 @@ export type NavIconName =
   | "play"
   | "messageSquare"
   | "type"
-  | "lifeBuoy";
+  | "lifeBuoy"
+  | "shield";
 
 export type NavItemConfig = {
   href: string;
@@ -74,6 +75,11 @@ export const merchantNavItems: NavItemConfig[] = [
   { href: "/merchant/app-order", labelKey: "orderNewApp", icon: "plusCircle" },
   { href: "/merchant/store", labelKey: "myStore", icon: "store" },
   { href: "/merchant/support", labelKey: "support", icon: "lifeBuoy" },
+  {
+    href: "/merchant/privacy-policy",
+    labelKey: "privacyPolicy",
+    icon: "shield",
+  },
   { href: "/merchant/settings", labelKey: "settings", icon: "settings" },
 ];
 
