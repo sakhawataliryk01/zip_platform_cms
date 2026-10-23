@@ -20,6 +20,7 @@
 # production
 /build
 
+temp_auto_push.bat
 # misc
 .DS_Store
 *.pem
@@ -31,7 +32,6 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
 
 # vercel
 .vercel
@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local persisted demo data
 .data/
+.gitignore
+branch_structure.json
+config.bat
