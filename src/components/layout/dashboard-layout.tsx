@@ -10,9 +10,11 @@ import {
   CreditCard,
   Film,
   Image as ImageIcon,
+  Images,
   KeyRound,
   LayoutDashboard,
   LayoutGrid,
+  LifeBuoy,
   LogOut,
   Menu,
   MessageSquare,
@@ -23,6 +25,7 @@ import {
   ShoppingCart,
   Smartphone,
   Store,
+  Type,
   User,
   Users,
   Wallet,
@@ -52,9 +55,12 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   plusCircle: PlusCircle,
   layoutGrid: LayoutGrid,
   image: ImageIcon,
+  images: Images,
   film: Film,
   play: Play,
   messageSquare: MessageSquare,
+  type: Type,
+  lifeBuoy: LifeBuoy,
 };
 
 type DashboardLayoutProps = {

@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   authenticateUser,
   createSessionToken,
-  setSessionCookie,
+  applySessionCookie,
 } from "@/lib/auth/session";
 
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
-function rateLimit(ip: string): boolean {
+function rateLimit(key: string): boolean {
   const now = Date.now();
-  const entry = attempts.get(ip);
+  const entry = attempts.get(key);
   if (!entry || entry.resetAt < now) {
-    attempts.set(ip, { count: 1, resetAt: now + 60_000 });
+    attempts.set(key, { count: 1, resetAt: now + 60_000 });
     return true;
   }
-  if (entry.count >= 10) return false;
+  if (entry.count >= 30) return false;
   entry.count += 1;
   return true;
 }
@@ -24,17 +24,17 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
 
-  if (!rateLimit(ip)) {
+  const body = await request.json().catch(() => null);
+  const email = typeof body?.email === "string" ? body.email : "";
+  const password = typeof body?.password === "string" ? body.password : "";
+  const remember = Boolean(body?.remember);
+
+  if (!rateLimit(`${ip}:${email.trim().toLowerCase()}`)) {
     return NextResponse.json(
       { error: "Too many login attempts. Try again later." },
       { status: 429 }
     );
   }
-
-  const body = await request.json().catch(() => null);
-  const email = typeof body?.email === "string" ? body.email : "";
-  const password = typeof body?.password === "string" ? body.password : "";
-  const remember = Boolean(body?.remember);
 
   if (!email || !password) {
     return NextResponse.json(
@@ -52,9 +52,7 @@ export async function POST(request: NextRequest) {
   }
 
   const token = await createSessionToken(user, remember);
-  await setSessionCookie(token, remember);
-
-  return NextResponse.json({
+  const response = NextResponse.json({
     user: {
       id: user.id,
       name: user.name,
@@ -62,4 +60,5 @@ export async function POST(request: NextRequest) {
       role: user.role,
     },
   });
+  return applySessionCookie(response, token, remember);
 }

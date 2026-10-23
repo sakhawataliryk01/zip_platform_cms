@@ -1,5 +1,5 @@
-import { MerchantCmsPageShell } from "@/components/merchant/cms-page-shell";
+import { BannersManager } from "@/components/merchant/banners-manager";
 
 export default function MerchantBannersPage() {
-  return <MerchantCmsPageShell namespace="banners" />;
+  return <BannersManager />;
 }

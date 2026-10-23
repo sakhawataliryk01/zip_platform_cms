@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import type { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import type { SessionUser } from "@/types";
 import { DEMO_CREDENTIALS } from "@/lib/mock/data";
@@ -9,8 +10,28 @@ const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
 const SESSION_DURATION_REMEMBER = 60 * 60 * 24 * 30; // 30 days
 
 function getSecret() {
-  const secret = process.env.AUTH_SECRET || "dev-auth-secret-change-me-in-production-32chars";
+  const secret =
+    process.env.AUTH_SECRET ||
+    "dev-auth-secret-change-me-in-production-32chars";
   return new TextEncoder().encode(secret);
+}
+
+/** Prefer Secure cookies when the public app URL is HTTPS (e.g. ngrok). */
+export function sessionCookieSecure() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  if (appUrl.startsWith("https://")) return true;
+  return process.env.NODE_ENV === "production";
+}
+
+export function sessionCookieOptions(remember = false) {
+  const maxAge = remember ? SESSION_DURATION_REMEMBER : SESSION_DURATION;
+  return {
+    httpOnly: true,
+    secure: sessionCookieSecure(),
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge,
+  };
 }
 
 export async function hashPassword(password: string) {
@@ -46,14 +67,17 @@ export async function verifySessionToken(
 
 export async function setSessionCookie(token: string, remember = false) {
   const cookieStore = await cookies();
-  const maxAge = remember ? SESSION_DURATION_REMEMBER : SESSION_DURATION;
-  cookieStore.set(SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge,
-  });
+  cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions(remember));
+}
+
+/** Attach session cookie directly on a Route Handler response (more reliable). */
+export function applySessionCookie(
+  response: NextResponse,
+  token: string,
+  remember = false
+) {
+  response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(remember));
+  return response;
 }
 
 export async function clearSessionCookie() {
@@ -74,7 +98,6 @@ export async function authenticateUser(
 ): Promise<SessionUser | null> {
   const normalized = email.trim().toLowerCase();
 
-  // Demo credentials (works before DB seed)
   if (
     normalized === DEMO_CREDENTIALS.admin.email &&
     password === DEMO_CREDENTIALS.admin.password
@@ -103,7 +126,6 @@ export async function authenticateUser(
     };
   }
 
-  // Future: look up users table via Supabase service role
   return null;
 }
 
