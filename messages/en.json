@@ -114,15 +114,18 @@
     },
     "merchant": {
       "dashboard": "Home",
+      "appContent": "App Content",
       "appSections": "App Sections",
       "supervisors": "Supervisors",
       "banners": "Banners",
+      "introPosters": "Intro Posters",
       "videoCategories": "Video Categories",
       "videosExplore": "Videos (Explore Now)",
       "videosExperiences": "Videos (Customer Experiences)",
       "generalNotices": "General Notices",
       "orderNewApp": "Order New App",
       "myStore": "My Store",
+      "support": "Support",
       "settings": "Settings",
       "myApp": "My App",
       "products": "Products",
@@ -299,13 +302,66 @@
       "title": "Supervisors",
       "subtitle": "Manage supervisors who can help run your app content."
     },
+    "appContent": {
+      "title": "App Content",
+      "subtitle": "Edit the two red announcement bars at the top of your mobile app home screen.",
+      "bar1Title": "Top bar 1 (welcome / store message)",
+      "bar2Title": "Top bar 2 (promo / shipping message)",
+      "textEn": "Text (English)",
+      "textAr": "Text (Arabic)",
+      "showInApp": "Show in app",
+      "previewEmpty": "Preview appears here…",
+      "bar1Placeholder": "Welcome to the official store in the Kingdom of Saudi Arabia.",
+      "bar1PlaceholderAr": "مرحباً بكم في المتجر الرسمي في المملكة العربية السعودية.",
+      "bar2Placeholder": "Free shipping for orders above SR 500 all over the Kingdom.",
+      "bar2PlaceholderAr": "شحن مجاني للطلبات فوق 500 ر.س في جميع أنحاء المملكة.",
+      "save": "Save app content"
+    },
     "banners": {
       "title": "Banners",
-      "subtitle": "Manage promotional banners in your mobile app."
+      "subtitle": "Upload and manage promotional banners shown in your mobile app.",
+      "storageHint": "Images are stored in the Supabase Storage bucket named “banner”.",
+      "slotsUsed": "{count} / {max} banners used",
+      "maxReached": "You already have 3 banners. Delete one to upload another.",
+      "listTitle": "All Banners",
+      "addBanner": "Add Banner",
+      "titleEn": "Title (English)",
+      "titleAr": "Title (Arabic)",
+      "titleEnPlaceholder": "e.g. Summer Sale",
+      "titleArPlaceholder": "مثال: تخفيضات الصيف",
+      "titleRequired": "Banner title is required",
+      "imageRequired": "Please choose a banner image to upload",
+      "linkUrl": "Link URL",
+      "sortOrder": "Sort order",
+      "image": "Banner image",
+      "imageHint": "JPG, PNG, WEBP or GIF — max 5MB. Uploaded to the banner bucket.",
+      "noPreview": "No image",
+      "deleteTitle": "Delete banner?",
+      "deleteHint": "This removes the banner record and its image from storage."
+    },
+    "introPosters": {
+      "title": "Intro Posters",
+      "subtitle": "Upload up to 3 intro / onboarding posters shown when customers open your app.",
+      "storageHint": "Images are stored in the Supabase Storage bucket named “intro-posters”.",
+      "slotsUsed": "{count} / {max} posters used",
+      "maxReached": "You already have 3 intro posters. Delete one to upload another.",
+      "listTitle": "All Intro Posters",
+      "addPoster": "Add Poster",
+      "titleEn": "Title (English)",
+      "titleAr": "Title (Arabic)",
+      "titleEnPlaceholder": "e.g. Welcome",
+      "titleArPlaceholder": "مثال: أهلاً بك",
+      "imageRequired": "Please choose a poster image to upload",
+      "sortOrder": "Sort order",
+      "image": "Poster image",
+      "imageHint": "JPG, PNG, WEBP or GIF — max 5MB. Portrait/intro screens work best.",
+      "noPreview": "No image",
+      "deleteTitle": "Delete intro poster?",
+      "deleteHint": "This removes the poster record and its image from storage."
     },
     "videoCategories": {
       "title": "Video Categories",
-      "subtitle": "Organize videos into categories shown in your mobile app.",
+      "subtitle": "Create categories for your YouTube Shorts / Reels in the mobile app.",
       "listTitle": "All Categories",
       "addCategory": "Add Category",
       "nameEn": "Name (English)",
@@ -314,7 +370,69 @@
       "nameArPlaceholder": "مثال: اكتشف",
       "nameRequired": "Category name is required",
       "deleteTitle": "Delete category?",
-      "deleteHint": "Videos in this category will keep their content but lose the category link."
+      "deleteHint": "Reels in this category will keep their content but lose the category link.",
+      "channelTitle": "Connect YouTube Channel",
+      "channelSubtitle": "Link your store’s YouTube channel, then sync Shorts into this CMS.",
+      "integrationTitle": "YouTube Integration",
+      "integrationSubtitle": "Each merchant adds their own Google Client ID & Secret, then connects their YouTube channel.",
+      "credentialsTitle": "1. Google OAuth credentials",
+      "credentialsHint": "Create an OAuth Web client in Google Cloud, paste Client ID + Secret here, and add the redirect URI below to that client.",
+      "redirectUriLabel": "Authorized redirect URI",
+      "originLabel": "Authorized JavaScript origin",
+      "clientId": "Google Client ID",
+      "clientSecret": "Google Client Secret",
+      "clientSecretKeepHint": "Leave as-is to keep saved secret, or paste a new one",
+      "clientIdRequired": "Client ID is required",
+      "clientSecretRequired": "Client Secret is required",
+      "saveCredentials": "Save credentials",
+      "credentialsSaved": "YouTube app credentials saved",
+      "saveCredentialsFirst": "Save your Google Client ID and Client Secret first, then connect YouTube.",
+      "connectYoutube": "Connect YouTube Channel",
+      "reconnectChannel": "Reconnect",
+      "oauthConnectHint": "Sign in with Google / YouTube to connect the channel that owns your Shorts.",
+      "oauthConnected": "YouTube channel connected successfully",
+      "oauthNotConfigured": "Save your Google Client ID and Client Secret above first.",
+      "connectedLabel": "Connected",
+      "myYoutubeChannel": "My YouTube Channel",
+      "channelIdLabel": "Channel",
+      "channelUrl": "Channel URL or @handle",
+      "channelUrlPlaceholder": "https://www.youtube.com/@yourstore or @yourstore",
+      "channelUrlRequired": "Enter your YouTube channel URL or @handle",
+      "connectChannel": "Connect Channel",
+      "disconnectChannel": "Disconnect",
+      "syncShorts": "Sync Shorts",
+      "syncing": "Syncing…",
+      "connectedAs": "Connected",
+      "lastSynced": "Last synced",
+      "neverSynced": "Not synced yet",
+      "apiMissing": "Add YOUTUBE_API_KEY to .env.local to verify channels and auto-import Shorts.",
+      "syncSuccess": "Imported {imported} Shorts ({skipped} already existed)",
+      "disconnectTitle": "Disconnect YouTube channel?",
+      "disconnectHint": "Your saved reels stay in the CMS. You can reconnect anytime.",
+      "openChannel": "Open channel",
+      "reelsTitle": "YouTube Reels",
+      "reelsSubtitle": "Paste YouTube Shorts links and assign them to a category. They appear in Explore Now or Customer Experiences.",
+      "reelsListTitle": "All Reels",
+      "addReel": "Add Reel",
+      "reelTitleEn": "Reel title (English)",
+      "reelTitleAr": "Reel title (Arabic)",
+      "reelTitleEnPlaceholder": "e.g. New arrival reel",
+      "reelTitleArPlaceholder": "مثال: ريل وصول جديد",
+      "reelTitleRequired": "Reel title is required",
+      "reelUrl": "YouTube Shorts URL",
+      "reelUrlHint": "Use a Shorts link like https://www.youtube.com/shorts/xxxxx (watch links are converted automatically).",
+      "reelUrlInvalid": "Enter a valid YouTube Shorts / Reel URL",
+      "category": "Category",
+      "categoryRequired": "Select a category for this reel",
+      "needCategoryFirst": "Add a category first",
+      "needCategoryHint": "Create at least one Active category, then attach YouTube Shorts to it.",
+      "showIn": "Show in app section",
+      "placementExplore": "Videos (Explore Now)",
+      "placementExperiences": "Videos (Customer Experiences)",
+      "preview": "Preview",
+      "openReel": "Open Shorts",
+      "deleteReelTitle": "Delete reel?",
+      "deleteReelHint": "This removes the reel from your app content."
     },
     "videos": {
       "exploreTitle": "Videos (Explore Now)",
@@ -342,9 +460,18 @@
     },
     "store": {
       "title": "My Store",
+      "subtitle": "Connect your Zid store with Store ID and Manager Access Token so products and reels stay merchant-scoped.",
       "storeName": "Store Name",
       "storeUrl": "Store URL",
       "storeId": "Store ID",
+      "accessToken": "Access Token",
+      "accessTokenPlaceholder": "Paste your Zid Manager Access Token",
+      "accessTokenKeepHint": "Leave blank to keep the saved token",
+      "accessTokenRequired": "Access Token is required",
+      "storeIdRequired": "Store ID is required",
+      "credentialsTitle": "Zid credentials",
+      "saveCredentials": "Save connection",
+      "notConnected": "No Zid store connected yet. Enter Store ID and Access Token below.",
       "connectionStatus": "Connection Status",
       "lastSync": "Last Synchronization",
       "productsCount": "Products",
@@ -355,12 +482,35 @@
     },
     "products": {
       "title": "Products",
+      "subtitle": "Products from your connected Zid store. Attach a Short from your synced channel reels to any product for the Flutter app.",
       "searchPlaceholder": "Search products...",
       "productName": "Product Name",
       "sku": "SKU",
       "stock": "Stock",
       "image": "Image",
-      "readOnlyNote": "Products are synced from Zid and are read-only for now."
+      "price": "Price",
+      "actions": "Actions",
+      "linkedReels": "Linked reels",
+      "attachReel": "Attach reel",
+      "attachTitle": "Link YouTube reel to product",
+      "pickFromChannel": "Select a Short from your synced channel reels below.",
+      "searchReelsPlaceholder": "Search your channel reels...",
+      "noChannelReels": "No channel reels yet",
+      "noChannelReelsHint": "Sync Shorts from Video Categories first, then come back here.",
+      "selectReelRequired": "Select a reel from your channel, or paste a Shorts URL.",
+      "sectionExplore": "Explore Now",
+      "sectionExperiences": "Customer Experiences",
+      "orPasteUrl": "Or paste a Shorts URL instead",
+      "reelUrl": "YouTube Shorts / Reel URL",
+      "reelTitle": "Reel title",
+      "reelUrlRequired": "YouTube Shorts / Reel URL is required",
+      "saveReel": "Save link",
+      "deleteReelTitle": "Remove product reel?",
+      "deleteReelDescription": "This unlinks the YouTube reel from the product. The video on YouTube is not deleted.",
+      "empty": "No products found",
+      "emptyHint": "Connect your Zid store under My Store, then refresh this page.",
+      "loadProductsError": "Could not load products from Zid. Check store credentials.",
+      "readOnlyNote": "Products are synced from Zid. Attach YouTube reels below for the mobile app."
     },
     "orders": {
       "title": "Orders",
@@ -468,6 +618,95 @@
       "confirmPassword": "Confirm Password",
       "emailNotifications": "Email notifications",
       "pushNotifications": "Push notifications"
+    },
+    "support": {
+      "badge": "ZidFlow Support & Help",
+      "heading": "How can we help you?",
+      "description": "ZidFlow helps merchants connect and manage their Zid stores — from OAuth and product sync to app content and subscriptions. Browse topics below or send us a message.",
+      "categoriesTitle": "Support categories",
+      "categoriesSubtitle": "Choose a topic to prefill your request, or pick one in the form.",
+      "contact": {
+        "emailLabel": "Support email",
+        "emailMissing": "Set NEXT_PUBLIC_SUPPORT_EMAIL in your environment to show a contact address.",
+        "emailCta": "Email support"
+      },
+      "categories": {
+        "GENERAL": {
+          "title": "General",
+          "description": "Other questions about ZidFlow."
+        },
+        "ACCOUNT_LOGIN": {
+          "title": "Account & Login",
+          "description": "Sign-in issues, password resets, and merchant profile access."
+        },
+        "ZID_STORE": {
+          "title": "Zid Store Integration",
+          "description": "Connect Store ID, access tokens, and store status."
+        },
+        "API_OAUTH": {
+          "title": "API & OAuth Configuration",
+          "description": "Partner keys, YouTube OAuth, and permission scopes."
+        },
+        "ORDERS_PRODUCTS": {
+          "title": "Orders & Products Synchronization",
+          "description": "Product lists, reels linking, and catalog sync problems."
+        },
+        "BILLING": {
+          "title": "Billing & App Subscriptions",
+          "description": "Plans, renewals, invoices, and app order status."
+        },
+        "TECHNICAL": {
+          "title": "Technical Issues",
+          "description": "Errors, timeouts, uploads, and unexpected dashboard behavior."
+        }
+      },
+      "form": {
+        "title": "Contact support",
+        "subtitle": "Submit a ticket. We store it securely for the support team to review.",
+        "fullName": "Full name",
+        "fullNamePlaceholder": "Your full name",
+        "email": "Email address",
+        "emailPlaceholder": "you@store.com",
+        "subject": "Subject",
+        "subjectPlaceholder": "Brief summary of your issue",
+        "category": "Category",
+        "message": "Message",
+        "messagePlaceholder": "Describe what happened, steps to reproduce, and any error messages…",
+        "submit": "Submit ticket",
+        "success": "Support ticket submitted",
+        "ticketCreated": "Ticket reference: {id}",
+        "disclaimer": "Tickets are saved via POST /api/merchant/support. Email delivery requires a separate mail provider if you need inbox notifications."
+      },
+      "errors": {
+        "fullName": "Full name is required",
+        "email": "Enter a valid email address",
+        "subject": "Subject must be at least 3 characters",
+        "message": "Message must be at least 10 characters"
+      },
+      "faq": {
+        "title": "Frequently asked questions",
+        "subtitle": "Quick answers for common ZidFlow merchant tasks.",
+        "connectStore": {
+          "q": "How do I connect my Zid store?",
+          "a": "Open My Store, enter your Zid Store ID and Manager Access Token, then save. After connecting, Products and sync features use those credentials for your merchant only."
+        },
+        "authorizeApi": {
+          "q": "How do I authorize API / OAuth permissions?",
+          "a": "For Zid, use the Manager Access Token with Store ID. For YouTube Shorts sync, add your Google Client ID & Secret under Video Categories, then complete the OAuth connect flow with the required scopes."
+        },
+        "troubleshoot": {
+          "q": "What should I do when integration errors appear?",
+          "a": "Confirm Store ID and token are valid, check that required SQL migrations and storage buckets were applied in Supabase, and retry the action. Include the exact error text when contacting support."
+        },
+        "contactSupport": {
+          "q": "How can I contact support?",
+          "a": "Use the contact form on this page to open a ticket, or email the address shown above when NEXT_PUBLIC_SUPPORT_EMAIL is configured."
+        }
+      },
+      "tickets": {
+        "title": "Support tickets API",
+        "description": "This project had no prior ticketing UI. Submissions go to POST /api/merchant/support and are persisted in Supabase table support_tickets (or local .data fallback until the SQL migration is applied)."
+      }
     }
   },
   "status": {

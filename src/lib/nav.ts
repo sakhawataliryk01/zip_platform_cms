@@ -16,9 +16,12 @@ export type NavIconName =
   | "plusCircle"
   | "layoutGrid"
   | "image"
+  | "images"
   | "film"
   | "play"
-  | "messageSquare";
+  | "messageSquare"
+  | "type"
+  | "lifeBuoy";
 
 export type NavItemConfig = {
   href: string;
@@ -42,9 +45,15 @@ export const adminNavItems: NavItemConfig[] = [
 /** CMS-style merchant nav (matches Alrajhi-style app content dashboard) */
 export const merchantNavItems: NavItemConfig[] = [
   { href: "/merchant/dashboard", labelKey: "dashboard", icon: "dashboard" },
+  { href: "/merchant/app-content", labelKey: "appContent", icon: "type" },
   { href: "/merchant/sections", labelKey: "appSections", icon: "layoutGrid" },
   { href: "/merchant/supervisors", labelKey: "supervisors", icon: "users" },
   { href: "/merchant/banners", labelKey: "banners", icon: "image" },
+  {
+    href: "/merchant/intro-posters",
+    labelKey: "introPosters",
+    icon: "images",
+  },
   {
     href: "/merchant/video-categories",
     labelKey: "videoCategories",
@@ -61,8 +70,10 @@ export const merchantNavItems: NavItemConfig[] = [
     icon: "messageSquare",
   },
   { href: "/merchant/notices", labelKey: "generalNotices", icon: "bell" },
+  { href: "/merchant/products", labelKey: "products", icon: "package" },
   { href: "/merchant/app-order", labelKey: "orderNewApp", icon: "plusCircle" },
   { href: "/merchant/store", labelKey: "myStore", icon: "store" },
+  { href: "/merchant/support", labelKey: "support", icon: "lifeBuoy" },
   { href: "/merchant/settings", labelKey: "settings", icon: "settings" },
 ];
 

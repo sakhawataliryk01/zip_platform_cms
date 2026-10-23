@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 export function MerchantCmsPageShell({
   namespace,
 }: {
-  namespace: "sections" | "supervisors" | "banners" | "notices";
+  namespace: "sections" | "supervisors" | "notices";
 }) {
   const t = useTranslations(`merchant.${namespace}`);
   const tCommon = useTranslations("common");

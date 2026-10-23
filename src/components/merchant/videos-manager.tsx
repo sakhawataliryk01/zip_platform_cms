@@ -18,7 +18,7 @@ import type {
   VideoCategory,
   VideoItem,
   VideoType,
-} from "@/lib/data/videos";
+} from "@/lib/data/video-shared";
 
 const emptyForm = {
   title: "",
@@ -202,7 +202,7 @@ export function VideosManager({ videoType }: { videoType: VideoType }) {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, videoUrl: e.target.value }))
                 }
-                placeholder="https://"
+                placeholder="https://www.youtube.com/shorts/xxxxx"
               />
             </div>
             <div className="space-y-2">

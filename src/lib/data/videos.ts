@@ -2,29 +2,19 @@ import { createClient } from "@supabase/supabase-js";
 import { promises as fs } from "fs";
 import path from "path";
 import { randomUUID } from "crypto";
+import type {
+  ContentStatus,
+  VideoCategory,
+  VideoItem,
+  VideoType,
+} from "@/lib/data/video-shared";
 
-export type ContentStatus = "ACTIVE" | "INACTIVE";
-export type VideoType = "EXPLORE" | "EXPERIENCE";
-
-export type VideoCategory = {
-  id: string;
-  name: string;
-  nameAr?: string;
-  status: ContentStatus;
-  createdAt: string;
-};
-
-export type VideoItem = {
-  id: string;
-  categoryId?: string;
-  title: string;
-  titleAr?: string;
-  videoUrl?: string;
-  thumbnailUrl?: string;
-  videoType: VideoType;
-  status: ContentStatus;
-  createdAt: string;
-};
+export type {
+  ContentStatus,
+  VideoCategory,
+  VideoItem,
+  VideoType,
+} from "@/lib/data/video-shared";
 
 type LocalStore = Record<
   string,
