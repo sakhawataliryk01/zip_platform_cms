@@ -22,6 +22,7 @@ import {
   Play,
   PlusCircle,
   Settings,
+  Shield,
   ShoppingCart,
   Smartphone,
   Store,
@@ -61,6 +62,7 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   messageSquare: MessageSquare,
   type: Type,
   lifeBuoy: LifeBuoy,
+  shield: Shield,
 };
 
 type DashboardLayoutProps = {
