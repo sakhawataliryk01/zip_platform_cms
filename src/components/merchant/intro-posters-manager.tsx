@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
+import { GripVertical, ImagePlus, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { EmptyState, LoadingState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type {
   ContentStatus,
   IntroPosterItem,
@@ -22,7 +22,6 @@ import { MAX_INTRO_POSTERS } from "@/lib/data/intro-poster-shared";
 const emptyForm = {
   title: "",
   titleAr: "",
-  sortOrder: "0",
   status: "ACTIVE" as ContentStatus,
 };
 
@@ -36,12 +35,15 @@ export function IntroPostersManager() {
   const [posters, setPosters] = useState<IntroPosterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reordering, setReordering] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [existingImage, setExistingImage] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -85,7 +87,6 @@ export function IntroPostersManager() {
     setForm({
       title: poster.title,
       titleAr: poster.titleAr || "",
-      sortOrder: String(poster.sortOrder ?? 0),
       status: poster.status,
     });
     setFile(null);
@@ -109,7 +110,14 @@ export function IntroPostersManager() {
       const body = new FormData();
       body.set("title", form.title);
       body.set("titleAr", form.titleAr);
-      body.set("sortOrder", form.sortOrder || "0");
+      body.set(
+        "sortOrder",
+        String(
+          editingId
+            ? posters.find((p) => p.id === editingId)?.sortOrder ?? posters.length
+            : posters.length
+        )
+      );
       body.set("status", form.status);
       if (editingId) body.set("id", editingId);
       if (file) body.set("file", file);
@@ -131,6 +139,63 @@ export function IntroPostersManager() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const persistOrder = async (next: IntroPosterItem[]) => {
+    const previous = posters;
+    setPosters(next.map((p, i) => ({ ...p, sortOrder: i })));
+    setReordering(true);
+    try {
+      const res = await fetch("/api/merchant/intro-posters", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderedIds: next.map((p) => p.id) }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPosters(previous);
+        toast.error(data.error || tCommon("error"));
+        return;
+      }
+      if (Array.isArray(data.posters)) {
+        setPosters(data.posters);
+      }
+      toast.success(t("reorderSaved"));
+    } catch {
+      setPosters(previous);
+      toast.error(tCommon("error"));
+    } finally {
+      setReordering(false);
+    }
+  };
+
+  const onDragStart = (index: number) => {
+    setDragIndex(index);
+  };
+
+  const onDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    setOverIndex(index);
+  };
+
+  const onDrop = async (index: number) => {
+    if (dragIndex === null || dragIndex === index) {
+      setDragIndex(null);
+      setOverIndex(null);
+      return;
+    }
+    const next = [...posters];
+    const [moved] = next.splice(dragIndex, 1);
+    next.splice(index, 0, moved);
+    setDragIndex(null);
+    setOverIndex(null);
+    await persistOrder(next);
+  };
+
+  const onDragEnd = () => {
+    setDragIndex(null);
+    setOverIndex(null);
   };
 
   const remove = async () => {
@@ -206,18 +271,7 @@ export function IntroPostersManager() {
                 dir="rtl"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ip-sort">{t("sortOrder")}</Label>
-              <Input
-                id="ip-sort"
-                type="number"
-                value={form.sortOrder}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, sortOrder: e.target.value }))
-                }
-              />
-            </div>
-            <div className="space-y-2">
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="ip-status">{tCommon("status")}</Label>
               <Select
                 id="ip-status"
@@ -228,6 +282,7 @@ export function IntroPostersManager() {
                     status: e.target.value as ContentStatus,
                   }))
                 }
+                className="max-w-xs"
               >
                 <option value="ACTIVE">ACTIVE</option>
                 <option value="INACTIVE">INACTIVE</option>
@@ -287,26 +342,58 @@ export function IntroPostersManager() {
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle>{t("listTitle")}</CardTitle>
+          {posters.length > 1 ? (
+            <p className="text-sm text-muted-foreground">{t("dragHint")}</p>
+          ) : null}
         </CardHeader>
         <CardContent>
           {posters.length === 0 ? (
             <EmptyState title={tCommon("empty")} description={t("subtitle")} />
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[700px] text-sm">
+              <table className="w-full min-w-[720px] text-sm">
                 <thead>
                   <tr className="border-b text-start text-muted-foreground">
+                    <th className="w-10 pb-3 font-medium" />
+                    <th className="pb-3 font-medium">{t("position")}</th>
                     <th className="pb-3 font-medium">{t("image")}</th>
                     <th className="pb-3 font-medium">{t("titleEn")}</th>
-                    <th className="pb-3 font-medium">{t("sortOrder")}</th>
                     <th className="pb-3 font-medium">{tTable("status")}</th>
                     <th className="pb-3 font-medium">{tTable("createdDate")}</th>
                     <th className="pb-3 font-medium">{tTable("actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {posters.map((poster) => (
-                    <tr key={poster.id} className="border-b border-border/70">
+                  {posters.map((poster, index) => (
+                    <tr
+                      key={poster.id}
+                      draggable={!reordering}
+                      onDragStart={() => onDragStart(index)}
+                      onDragOver={(e) => onDragOver(e, index)}
+                      onDrop={() => onDrop(index)}
+                      onDragEnd={onDragEnd}
+                      className={cn(
+                        "border-b border-border/70 transition-colors",
+                        dragIndex === index && "opacity-50",
+                        overIndex === index &&
+                          dragIndex !== null &&
+                          dragIndex !== index &&
+                          "bg-primary/5 ring-1 ring-inset ring-primary/30",
+                        !reordering && "cursor-grab active:cursor-grabbing"
+                      )}
+                    >
+                      <td className="py-3 pe-1">
+                        <span
+                          className="inline-flex text-muted-foreground"
+                          title={t("dragHandle")}
+                          aria-hidden
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </span>
+                      </td>
+                      <td className="py-3 font-medium tabular-nums">
+                        {index + 1}
+                      </td>
                       <td className="py-3">
                         {poster.imageUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -314,6 +401,7 @@ export function IntroPostersManager() {
                             src={poster.imageUrl}
                             alt={poster.title}
                             className="h-20 w-14 rounded object-cover"
+                            draggable={false}
                           />
                         ) : (
                           <span className="text-muted-foreground">—</span>
@@ -330,7 +418,6 @@ export function IntroPostersManager() {
                           </div>
                         ) : null}
                       </td>
-                      <td className="py-3">{poster.sortOrder}</td>
                       <td className="py-3">
                         <StatusBadge status={poster.status} />
                       </td>
@@ -344,6 +431,7 @@ export function IntroPostersManager() {
                             size="icon"
                             title={tCommon("edit")}
                             onClick={() => startEdit(poster)}
+                            disabled={reordering}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -352,6 +440,7 @@ export function IntroPostersManager() {
                             size="icon"
                             title={tCommon("delete")}
                             onClick={() => setDeleteId(poster.id)}
+                            disabled={reordering}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -361,6 +450,11 @@ export function IntroPostersManager() {
                   ))}
                 </tbody>
               </table>
+              {reordering ? (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {tCommon("loading")}
+                </p>
+              ) : null}
             </div>
           )}
         </CardContent>

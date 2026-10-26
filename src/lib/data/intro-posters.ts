@@ -269,6 +269,66 @@ export async function updateIntroPoster(
   return { poster: local.posters[idx], source: "local" };
 }
 
+/** Persist display order from drag-and-drop (orderedIds = top → bottom). */
+export async function reorderIntroPosters(
+  merchantId: string,
+  orderedIds: string[]
+): Promise<{ posters: IntroPosterItem[]; source: "supabase" | "local" }> {
+  const uniqueIds = [...new Set(orderedIds.map((id) => String(id).trim()).filter(Boolean))];
+  if (uniqueIds.length === 0) {
+    throw new Error("orderedIds is required");
+  }
+
+  const existing = await listIntroPosters(merchantId);
+  const existingIds = new Set(existing.map((p) => p.id));
+  for (const id of uniqueIds) {
+    if (!existingIds.has(id)) {
+      throw new Error("One or more posters were not found");
+    }
+  }
+
+  // Keep any posters not in the payload at the end (stable)
+  const remaining = existing
+    .filter((p) => !uniqueIds.includes(p.id))
+    .map((p) => p.id);
+  const finalOrder = [...uniqueIds, ...remaining];
+
+  let supabaseOk = true;
+  try {
+    for (let i = 0; i < finalOrder.length; i++) {
+      const { error } = await sb()
+        .from("intro_posters")
+        .update({ sort_order: i, updated_at: new Date().toISOString() })
+        .eq("id", finalOrder[i])
+        .eq("merchant_id", merchantId);
+      if (error) {
+        supabaseOk = false;
+        break;
+      }
+    }
+    if (supabaseOk) {
+      return {
+        source: "supabase",
+        posters: await listIntroPosters(merchantId),
+      };
+    }
+  } catch {
+    supabaseOk = false;
+  }
+
+  const local = await ensureLocal(merchantId);
+  const byId = new Map(local.posters.map((p) => [p.id, p]));
+  const next = finalOrder
+    .map((id, index) => {
+      const poster = byId.get(id);
+      if (!poster) return null;
+      return { ...poster, sortOrder: index };
+    })
+    .filter(Boolean) as IntroPosterItem[];
+  await writeLocal(merchantId, next);
+  return { source: "local", posters: next };
+}
+
 export async function deleteIntroPoster(
   merchantId: string,
   id: string

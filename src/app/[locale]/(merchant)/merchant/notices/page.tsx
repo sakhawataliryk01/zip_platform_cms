@@ -1,5 +1,5 @@
-import { MerchantCmsPageShell } from "@/components/merchant/cms-page-shell";
+import { NoticesManager } from "@/components/merchant/notices-manager";
 
 export default function MerchantNoticesPage() {
-  return <MerchantCmsPageShell namespace="notices" />;
+  return <NoticesManager />;
 }
