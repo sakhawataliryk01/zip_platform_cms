@@ -4,6 +4,7 @@ import {
   createIntroPoster,
   deleteIntroPoster,
   listIntroPosters,
+  reorderIntroPosters,
   updateIntroPoster,
   uploadIntroPosterImage,
   MAX_INTRO_POSTERS,
@@ -169,6 +170,36 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Update failed";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+/** Reorder intro posters after drag-and-drop.
+ * Body: { orderedIds: string[] } — top → bottom
+ */
+export async function PUT(request: NextRequest) {
+  const user = await requireMerchant();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const orderedIds = Array.isArray(body?.orderedIds)
+    ? body.orderedIds.map((id: unknown) => String(id))
+    : null;
+
+  if (!orderedIds || orderedIds.length === 0) {
+    return NextResponse.json(
+      { error: "orderedIds array is required" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const result = await reorderIntroPosters(user.merchantId!, orderedIds);
+    return NextResponse.json({ ok: true, ...result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Reorder failed";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

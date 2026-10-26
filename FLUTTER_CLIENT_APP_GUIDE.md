@@ -266,7 +266,7 @@ Base: `https://YOUR_CMS_DOMAIN/api/public/store/{merchantId}/...`
 | GET | `/banners` | active banners |
 | GET | `/intro-posters` | intro / onboarding posters (max 3) |
 | GET | `/app-content` | home top red bar texts |
-| GET | `/notices` | active notices |
+| GET | `/notices` | active general notices (merchant-scoped) |
 | GET | `/video-categories` | active categories |
 | GET | `/videos?type=EXPLORE` | explore videos |
 | GET | `/videos?type=EXPERIENCE` | experience videos |
