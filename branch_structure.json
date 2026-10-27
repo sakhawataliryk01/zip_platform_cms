@@ -1,0 +1,21 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feature/privacy-policy",
+    "feature/support-and-cms-updates",
+    "feature/zid-oauth-token-save",
+    "main"
+  ],
+  "parent": {
+    "feature/privacy-policy": "main",
+    "feature/support-and-cms-updates": "main",
+    "feature/zid-oauth-token-save": "main",
+    "main": null
+  },
+  "order": [
+    "main",
+    "feature/privacy-policy",
+    "feature/support-and-cms-updates",
+    "feature/zid-oauth-token-save"
+  ]
+}
