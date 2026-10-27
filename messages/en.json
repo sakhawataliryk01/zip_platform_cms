@@ -751,7 +751,7 @@
         },
         "contactSupport": {
           "q": "How can I contact support?",
-          "a": "Use the contact form on this page to open a ticket, or email the address shown above when NEXT_PUBLIC_SUPPORT_EMAIL is configured."
+          "a": "Use the public Support page for phone, WhatsApp, or email without signing in. Logged-in merchants can also submit a ticket from Merchant → Support."
         }
       },
       "tickets": {
@@ -894,5 +894,22 @@
     "invalidEmail": "Enter a valid email address",
     "minPassword": "Password must be at least 8 characters",
     "passwordsMatch": "Passwords must match"
+  },
+  "publicPages": {
+    "login": "Sign in",
+    "privacy": {
+      "navTitle": "Privacy Policy"
+    },
+    "support": {
+      "navTitle": "Support",
+      "title": "Support & Help",
+      "subtitle": "Public support for ZidFlow merchants and reviewers. Contact us by phone, WhatsApp, or email — no login required.",
+      "phone": "Phone",
+      "email": "Email",
+      "emailSoon": "Configure NEXT_PUBLIC_SUPPORT_EMAIL to show an address.",
+      "privacyTitle": "Looking for our Privacy Policy?",
+      "privacyHint": "Read how we collect and protect merchant and store data.",
+      "viewPrivacy": "View Privacy Policy"
+    }
   }
 }
