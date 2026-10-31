@@ -35,11 +35,40 @@ async function writeLocal(store: LocalStore) {
   await fs.writeFile(STORE_FILE, JSON.stringify(store, null, 2), "utf8");
 }
 
+function mapRow(merchantId: string, data: Record<string, unknown>): ZidStoreCredentials {
+  const authorization =
+    (data.authorization_token ? String(data.authorization_token) : "") ||
+    // legacy: older rows stuffed Authorization into refresh_token
+    (data.refresh_token ? String(data.refresh_token) : "") ||
+    undefined;
+
+  return {
+    merchantId,
+    storeId: String(data.store_id || ""),
+    storeName: data.store_name ? String(data.store_name) : undefined,
+    storeUrl: data.store_url ? String(data.store_url) : undefined,
+    accessToken: String(data.access_token || ""),
+    authorizationToken: authorization || undefined,
+    refreshToken: data.oauth_refresh_token
+      ? String(data.oauth_refresh_token)
+      : undefined,
+    tokenExpiresAt: data.token_expires_at
+      ? String(data.token_expires_at)
+      : undefined,
+    connectionStatus:
+      (data.connection_status as ZidStoreCredentials["connectionStatus"]) ||
+      "CONNECTED",
+    lastSyncedAt: data.last_synced_at
+      ? String(data.last_synced_at)
+      : undefined,
+    productsCount: Number(data.products_count || 0),
+  };
+}
+
 function fromEnv(merchantId: string): ZidStoreCredentials | null {
   const storeId = process.env.ZID_STORE_ID?.trim();
   const accessToken = process.env.ZID_ACCESS_TOKEN?.trim();
   if (!storeId || !accessToken) return null;
-  // Only auto-apply env credentials to the demo merchant unless explicitly scoped
   if (merchantId !== DEMO_MERCHANT_ID && !process.env.ZID_APPLY_ENV_TO_ALL) {
     return null;
   }
@@ -64,23 +93,7 @@ export async function getZidStoreCredentials(
       .maybeSingle();
 
     if (!error && data?.access_token && data?.store_id) {
-      return {
-        merchantId,
-        storeId: String(data.store_id),
-        storeName: data.store_name ? String(data.store_name) : undefined,
-        storeUrl: data.store_url ? String(data.store_url) : undefined,
-        accessToken: String(data.access_token),
-        authorizationToken: data.refresh_token
-          ? String(data.refresh_token)
-          : undefined,
-        connectionStatus:
-          (data.connection_status as ZidStoreCredentials["connectionStatus"]) ||
-          "CONNECTED",
-        lastSyncedAt: data.last_synced_at
-          ? String(data.last_synced_at)
-          : undefined,
-        productsCount: Number(data.products_count || 0),
-      };
+      return mapRow(merchantId, data as Record<string, unknown>);
     }
   } catch {
     // fall through
@@ -94,22 +107,54 @@ export async function getZidStoreCredentials(
   return fromEnv(merchantId);
 }
 
+export async function findMerchantIdByStoreId(
+  storeId: string
+): Promise<string | null> {
+  const trimmed = storeId.trim();
+  if (!trimmed) return null;
+
+  try {
+    const { data, error } = await sb()
+      .from("zid_stores")
+      .select("merchant_id")
+      .eq("store_id", trimmed)
+      .maybeSingle();
+    if (!error && data?.merchant_id) return String(data.merchant_id);
+  } catch {
+    // fall through
+  }
+
+  const local = await readLocal();
+  const hit = Object.values(local).find((c) => c.storeId === trimmed);
+  return hit?.merchantId || null;
+}
+
+export type SaveZidStoreInput = {
+  storeId: string;
+  accessToken: string;
+  authorizationToken?: string;
+  refreshToken?: string;
+  tokenExpiresAt?: string;
+  storeName?: string;
+  storeUrl?: string;
+};
+
 export async function saveZidStoreCredentials(
   merchantId: string,
-  input: {
-    storeId: string;
-    accessToken: string;
-    authorizationToken?: string;
-    storeName?: string;
-    storeUrl?: string;
-  }
+  input: SaveZidStoreInput
 ): Promise<{ source: "supabase" | "local"; credentials: ZidStoreCredentials }> {
-  const payload = {
+  const authorization = input.authorizationToken?.trim() || null;
+  const oauthRefresh = input.refreshToken?.trim() || null;
+
+  const payload: Record<string, unknown> = {
     merchant_id: merchantId,
     store_id: input.storeId.trim(),
     access_token: input.accessToken.trim(),
-    // reuse refresh_token column for Authorization Bearer when distinct
-    refresh_token: input.authorizationToken?.trim() || null,
+    authorization_token: authorization,
+    // Keep legacy column in sync with Authorization for older readers
+    refresh_token: authorization,
+    oauth_refresh_token: oauthRefresh,
+    token_expires_at: input.tokenExpiresAt?.trim() || null,
     store_name: input.storeName?.trim() || "Zid Store",
     store_url: input.storeUrl?.trim() || null,
     connection_status: "CONNECTED",
@@ -118,13 +163,15 @@ export async function saveZidStoreCredentials(
 
   const credentials: ZidStoreCredentials = {
     merchantId,
-    storeId: payload.store_id,
-    accessToken: payload.access_token,
-    authorizationToken: input.authorizationToken?.trim() || undefined,
-    storeName: payload.store_name,
-    storeUrl: payload.store_url || undefined,
+    storeId: String(payload.store_id),
+    accessToken: String(payload.access_token),
+    authorizationToken: authorization || undefined,
+    refreshToken: oauthRefresh || undefined,
+    tokenExpiresAt: input.tokenExpiresAt?.trim() || undefined,
+    storeName: String(payload.store_name),
+    storeUrl: (payload.store_url as string | null) || undefined,
     connectionStatus: "CONNECTED",
-    lastSyncedAt: payload.last_synced_at,
+    lastSyncedAt: String(payload.last_synced_at),
   };
 
   try {
@@ -140,14 +187,94 @@ export async function saveZidStoreCredentials(
 
     const { error } = await q;
     if (!error) return { source: "supabase", credentials };
-  } catch {
-    // fall through
+
+    // If new columns are missing, retry without them so local/dev still works
+    if (String(error.message || "").includes("authorization_token") ||
+        String(error.message || "").includes("oauth_refresh_token") ||
+        String(error.code || "") === "PGRST204") {
+      const legacy = {
+        merchant_id: merchantId,
+        store_id: input.storeId.trim(),
+        access_token: input.accessToken.trim(),
+        refresh_token: authorization,
+        store_name: input.storeName?.trim() || "Zid Store",
+        store_url: input.storeUrl?.trim() || null,
+        connection_status: "CONNECTED",
+        last_synced_at: new Date().toISOString(),
+      };
+      const legacyQ = existing.data?.id
+        ? sb().from("zid_stores").update(legacy).eq("merchant_id", merchantId)
+        : sb().from("zid_stores").insert(legacy);
+      const { error: legacyError } = await legacyQ;
+      if (!legacyError) return { source: "supabase", credentials };
+      console.error("zid_stores save failed:", legacyError);
+    } else {
+      console.error("zid_stores save failed:", error);
+    }
+  } catch (err) {
+    console.error("zid_stores save exception:", err);
   }
 
   const local = await readLocal();
   local[merchantId] = credentials;
   await writeLocal(local);
   return { source: "local", credentials };
+}
+
+export async function fetchZidManagerProfile(tokens: {
+  authorization: string;
+  accessToken: string;
+}): Promise<{
+  storeId: string;
+  storeName?: string;
+  storeUrl?: string;
+  email?: string;
+}> {
+  const res = await fetch("https://api.zid.sa/v1/managers/account/profile", {
+    headers: {
+      Accept: "application/json",
+      "Accept-Language": "en",
+      Authorization: `Bearer ${tokens.authorization}`,
+      "X-Manager-Token": tokens.accessToken,
+      "Access-Token": tokens.accessToken,
+      Role: "Manager",
+    },
+    cache: "no-store",
+  });
+
+  const data = (await res.json().catch(() => null)) as Record<
+    string,
+    unknown
+  > | null;
+
+  if (!res.ok || !data) {
+    const message =
+      (data as { message?: string } | null)?.message ||
+      `Failed to load Zid manager profile (${res.status})`;
+    throw new Error(String(message));
+  }
+
+  const store = (data.store || {}) as Record<string, unknown>;
+  const user = (data.user || {}) as Record<string, unknown>;
+  const storeId = String(store.id ?? store.store_id ?? data.store_id ?? "");
+  if (!storeId) {
+    throw new Error("Zid profile response did not include store.id");
+  }
+
+  return {
+    storeId,
+    storeName: store.name
+      ? String(store.name)
+      : store.title
+        ? String(store.title)
+        : undefined,
+    storeUrl: store.url
+      ? String(store.url)
+      : store.permalink
+        ? String(store.permalink)
+        : undefined,
+    email: user.email ? String(user.email) : undefined,
+  };
 }
 
 export async function fetchZidProducts(
