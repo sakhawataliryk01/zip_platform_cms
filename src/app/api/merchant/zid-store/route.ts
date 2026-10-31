@@ -30,6 +30,8 @@ function publicCredentials(creds: Awaited<ReturnType<typeof getZidStoreCredentia
     productsCount: creds.productsCount,
     accessTokenMasked: masked,
     hasAccessToken: Boolean(creds.accessToken),
+    hasAuthorizationToken: Boolean(creds.authorizationToken),
+    tokenExpiresAt: creds.tokenExpiresAt,
   };
 }
 
@@ -82,12 +84,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Store ID is required" }, { status: 400 });
   }
 
+  const existing = await getZidStoreCredentials(user.merchantId!);
+
   if (
     !accessToken ||
     accessToken === "__KEEP_EXISTING__" ||
     keepExistingToken
   ) {
-    const existing = await getZidStoreCredentials(user.merchantId!);
     if (!existing?.accessToken) {
       return NextResponse.json(
         { error: "Access Token is required" },
@@ -100,7 +103,10 @@ export async function POST(request: NextRequest) {
   const result = await saveZidStoreCredentials(user.merchantId!, {
     storeId,
     accessToken,
-    authorizationToken,
+    authorizationToken:
+      authorizationToken || existing?.authorizationToken || undefined,
+    refreshToken: existing?.refreshToken,
+    tokenExpiresAt: existing?.tokenExpiresAt,
     storeName,
     storeUrl,
   });

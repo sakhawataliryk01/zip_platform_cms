@@ -21,6 +21,8 @@ type StoreInfo = {
   productsCount?: number;
   accessTokenMasked?: string;
   hasAccessToken?: boolean;
+  hasAuthorizationToken?: boolean;
+  tokenExpiresAt?: string;
 };
 
 export default function MerchantStorePage() {
@@ -66,6 +68,28 @@ export default function MerchantStorePage() {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const zid = params.get("zid");
+    const zidError = params.get("zid_error");
+    if (zid === "connected") {
+      toast.success(t("oauthConnected"));
+      load();
+    } else if (zidError) {
+      toast.error(t("oauthFailed", { error: zidError }));
+    }
+    if (zid || zidError) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("zid");
+      url.searchParams.delete("zid_error");
+      url.searchParams.delete("store_id");
+      url.searchParams.delete("source");
+      window.history.replaceState({}, "", url.pathname);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,13 +168,37 @@ export default function MerchantStorePage() {
                 label={t("accessToken")}
                 value={store.accessTokenMasked || "—"}
               />
+              <Item
+                label={t("authorizationStatus")}
+                value={
+                  store.hasAuthorizationToken
+                    ? t("authorizationPresent")
+                    : t("authorizationMissing")
+                }
+              />
             </dl>
           ) : (
             <p className="text-sm text-muted-foreground">{t("notConnected")}</p>
           )}
 
+          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold">{t("oauthTitle")}</h3>
+              <p className="text-xs text-muted-foreground">{t("oauthHint")}</p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => {
+                window.location.href = "/api/zid/auth";
+              }}
+            >
+              {store?.hasAccessToken ? t("reconnectOAuth") : t("connectOAuth")}
+            </Button>
+          </div>
+
           <div className="space-y-4 border-t pt-6">
             <h3 className="text-sm font-semibold">{t("credentialsTitle")}</h3>
+            <p className="text-xs text-muted-foreground">{t("manualHint")}</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="storeId">{t("storeId")}</Label>
