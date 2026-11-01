@@ -238,6 +238,42 @@ export async function saveZidStoreCredentials(
   return { source: "local", credentials };
 }
 
+function zidAuthHeaders(tokens: {
+  authorization: string;
+  accessToken: string;
+}) {
+  return {
+    Accept: "application/json",
+    "Accept-Language": "en",
+    Authorization: `Bearer ${tokens.authorization}`,
+    "X-Manager-Token": tokens.accessToken,
+    "Access-Token": tokens.accessToken,
+    Role: "Manager",
+  };
+}
+
+function pickStoreFields(store: Record<string, unknown> | null | undefined) {
+  if (!store || typeof store !== "object") {
+    return { storeId: "", storeName: undefined as string | undefined, storeUrl: undefined as string | undefined };
+  }
+  const storeId = String(
+    store.id ?? store.store_id ?? store.uuid ?? ""
+  );
+  const storeName = store.title
+    ? String(store.title)
+    : store.name
+      ? String(store.name)
+      : undefined;
+  const storeUrl = store.url
+    ? String(store.url)
+    : store.permalink
+      ? String(store.permalink)
+      : store.username
+        ? `https://${String(store.username)}.zid.store`
+        : undefined;
+  return { storeId, storeName, storeUrl };
+}
+
 export async function fetchZidManagerProfile(tokens: {
   authorization: string;
   accessToken: string;
@@ -247,15 +283,10 @@ export async function fetchZidManagerProfile(tokens: {
   storeUrl?: string;
   email?: string;
 }> {
+  const headers = zidAuthHeaders(tokens);
+
   const res = await fetch("https://api.zid.sa/v1/managers/account/profile", {
-    headers: {
-      Accept: "application/json",
-      "Accept-Language": "en",
-      Authorization: `Bearer ${tokens.authorization}`,
-      "X-Manager-Token": tokens.accessToken,
-      "Access-Token": tokens.accessToken,
-      Role: "Manager",
-    },
+    headers,
     cache: "no-store",
   });
 
@@ -271,25 +302,51 @@ export async function fetchZidManagerProfile(tokens: {
     throw new Error(String(message));
   }
 
-  const store = (data.store || {}) as Record<string, unknown>;
   const user = (data.user || {}) as Record<string, unknown>;
-  const storeId = String(store.id ?? store.store_id ?? data.store_id ?? "");
+  // Official shape: { user: { store: { id, title, ... } } }
+  // Also accept legacy/top-level store for older payloads.
+  const nested = pickStoreFields(
+    (user.store as Record<string, unknown> | undefined) ||
+      (data.store as Record<string, unknown> | undefined)
+  );
+
+  let storeId = nested.storeId || String(data.store_id ?? user.store_id ?? "");
+  let storeName = nested.storeName;
+  let storeUrl = nested.storeUrl;
+
+  // Fallback Account API store endpoint if profile omits store
   if (!storeId) {
+    const storeRes = await fetch(
+      "https://api.zid.sa/v1/managers/account/store",
+      { headers, cache: "no-store" }
+    );
+    const storeData = (await storeRes.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
+    if (storeRes.ok && storeData) {
+      const fromStoreEndpoint = pickStoreFields(
+        (storeData.store as Record<string, unknown> | undefined) ||
+          (storeData.data as Record<string, unknown> | undefined) ||
+          storeData
+      );
+      storeId = fromStoreEndpoint.storeId;
+      storeName = storeName || fromStoreEndpoint.storeName;
+      storeUrl = storeUrl || fromStoreEndpoint.storeUrl;
+    }
+  }
+
+  if (!storeId) {
+    console.error("Zid profile missing store id. Top-level keys:", Object.keys(data), {
+      userKeys: Object.keys(user),
+    });
     throw new Error("Zid profile response did not include store.id");
   }
 
   return {
     storeId,
-    storeName: store.name
-      ? String(store.name)
-      : store.title
-        ? String(store.title)
-        : undefined,
-    storeUrl: store.url
-      ? String(store.url)
-      : store.permalink
-        ? String(store.permalink)
-        : undefined,
+    storeName,
+    storeUrl,
     email: user.email ? String(user.email) : undefined,
   };
 }
