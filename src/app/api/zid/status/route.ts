@@ -16,9 +16,16 @@ export async function GET(request: Request) {
     hasClientId: Boolean(clientId),
     hasClientSecret: Boolean(clientSecret),
     hasAppUrl: Boolean(appUrl),
+    /** Client ID is public in OAuth authorize URLs — compare to Partner → API keys */
+    clientId: clientId || null,
     appUrl: appUrl || null,
     expectedRedirectUrl: zidAuthUrl(origin),
     expectedCallbackUrl: zidCallbackUrl(origin),
-    hint: "Partner Dashboard → Redirect URL must be expectedRedirectUrl, Callback URL must be expectedCallbackUrl. Activate must open Redirect URL (OAuth), not only Open App.",
+    checks: [
+      "Partner Redirection URL must equal expectedRedirectUrl",
+      "Partner Callback URL must equal expectedCallbackUrl",
+      "Vercel ZID_CLIENT_ID must equal Client ID on ZidFlow API keys page (not an old app)",
+      "After Activate, address bar must show /api/zid/auth or /api/zid/callback?code= — not only /en/login",
+    ],
   });
 }
