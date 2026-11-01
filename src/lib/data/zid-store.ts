@@ -174,6 +174,9 @@ export async function saveZidStoreCredentials(
     lastSyncedAt: String(payload.last_synced_at),
   };
 
+  const isVercel = Boolean(process.env.VERCEL);
+  let lastError: string | null = null;
+
   try {
     const existing = await sb()
       .from("zid_stores")
@@ -188,10 +191,14 @@ export async function saveZidStoreCredentials(
     const { error } = await q;
     if (!error) return { source: "supabase", credentials };
 
+    lastError = error.message || error.code || "supabase_write_failed";
+
     // If new columns are missing, retry without them so local/dev still works
-    if (String(error.message || "").includes("authorization_token") ||
-        String(error.message || "").includes("oauth_refresh_token") ||
-        String(error.code || "") === "PGRST204") {
+    if (
+      String(error.message || "").includes("authorization_token") ||
+      String(error.message || "").includes("oauth_refresh_token") ||
+      String(error.code || "") === "PGRST204"
+    ) {
       const legacy = {
         merchant_id: merchantId,
         store_id: input.storeId.trim(),
@@ -207,12 +214,22 @@ export async function saveZidStoreCredentials(
         : sb().from("zid_stores").insert(legacy);
       const { error: legacyError } = await legacyQ;
       if (!legacyError) return { source: "supabase", credentials };
+      lastError =
+        legacyError.message || legacyError.code || "supabase_legacy_write_failed";
       console.error("zid_stores save failed:", legacyError);
     } else {
       console.error("zid_stores save failed:", error);
     }
   } catch (err) {
+    lastError = err instanceof Error ? err.message : "supabase_exception";
     console.error("zid_stores save exception:", err);
+  }
+
+  // On Vercel, local .data is ephemeral and invisible in Supabase — fail loudly.
+  if (isVercel) {
+    throw new Error(
+      `Failed to save Zid tokens to Supabase (merchant ${merchantId}): ${lastError || "unknown"}. Check RLS policies and that merchant_id exists in merchants.`
+    );
   }
 
   const local = await readLocal();

@@ -160,15 +160,25 @@ export async function GET(request: NextRequest) {
       byStore ||
       DEMO_MERCHANT_ID;
 
-    const saved = await saveZidStoreCredentials(merchantId, {
-      storeId: profile.storeId,
-      accessToken,
-      authorizationToken: authorization,
-      refreshToken: refreshToken || undefined,
-      tokenExpiresAt,
-      storeName: profile.storeName,
-      storeUrl: profile.storeUrl,
-    });
+    let saved;
+    try {
+      saved = await saveZidStoreCredentials(merchantId, {
+        storeId: profile.storeId,
+        accessToken,
+        authorizationToken: authorization,
+        refreshToken: refreshToken || undefined,
+        tokenExpiresAt,
+        storeName: profile.storeName,
+        storeUrl: profile.storeUrl,
+      });
+    } catch (saveErr) {
+      console.error("Zid OAuth save failed:", saveErr);
+      const msg =
+        saveErr instanceof Error ? saveErr.message : "supabase_save_failed";
+      return redirectStore(
+        `zid_error=${encodeURIComponent(msg.slice(0, 180))}`
+      );
+    }
 
     console.log("Zid OAuth tokens saved", {
       merchantId,
@@ -190,6 +200,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (err) {
     console.error("Zid callback error:", err);
-    return redirectStore("zid_error=callback_failed");
+    const msg = err instanceof Error ? err.message : "callback_failed";
+    return redirectStore(`zid_error=${encodeURIComponent(msg.slice(0, 180))}`);
   }
 }
