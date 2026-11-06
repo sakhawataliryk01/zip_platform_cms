@@ -22,13 +22,17 @@ export type NavIconName =
   | "messageSquare"
   | "type"
   | "lifeBuoy"
-  | "shield";
+  | "shield"
+  | "tag"
+  | "percent";
 
 export type NavItemConfig = {
   href: string;
   labelKey: string;
   icon: NavIconName;
   unavailable?: boolean;
+  /** Optional visual group separator before this item */
+  group?: "commerce" | "app" | "team" | "account";
 };
 
 export const adminNavItems: NavItemConfig[] = [
@@ -43,44 +47,46 @@ export const adminNavItems: NavItemConfig[] = [
   { href: "/admin/settings", labelKey: "settings", icon: "settings" },
 ];
 
-/** CMS-style merchant nav (matches Alrajhi-style app content dashboard) */
+/**
+ * Merchant nav aligned to Benaa/Beta-style dashboard points:
+ * Home → Orders → Products → Customers → App UI → Marketing → Supervisors → …
+ */
 export const merchantNavItems: NavItemConfig[] = [
-  { href: "/merchant/dashboard", labelKey: "dashboard", icon: "dashboard" },
-  { href: "/merchant/app-content", labelKey: "appContent", icon: "type" },
-  { href: "/merchant/sections", labelKey: "appSections", icon: "layoutGrid" },
-  { href: "/merchant/supervisors", labelKey: "supervisors", icon: "users" },
-  { href: "/merchant/banners", labelKey: "banners", icon: "image" },
+  { href: "/merchant/dashboard", labelKey: "dashboard", icon: "dashboard", group: "commerce" },
+  { href: "/merchant/orders", labelKey: "orders", icon: "shoppingCart", group: "commerce" },
+  { href: "/merchant/products", labelKey: "products", icon: "package", group: "commerce" },
+  { href: "/merchant/customers", labelKey: "customers", icon: "users", group: "commerce" },
   {
-    href: "/merchant/intro-posters",
-    labelKey: "introPosters",
-    icon: "images",
+    href: "/merchant/sections",
+    labelKey: "appInterface",
+    icon: "smartphone",
+    group: "app",
   },
+  { href: "/merchant/banners", labelKey: "marketing", icon: "percent", group: "app" },
+  { href: "/merchant/app-content", labelKey: "appContent", icon: "type", group: "app" },
+  { href: "/merchant/intro-posters", labelKey: "introPosters", icon: "images", group: "app" },
   {
     href: "/merchant/video-categories",
     labelKey: "videoCategories",
     icon: "film",
+    group: "app",
   },
+  { href: "/merchant/notices", labelKey: "generalNotices", icon: "bell", group: "app" },
   {
-    href: "/merchant/videos/explore",
-    labelKey: "videosExplore",
-    icon: "play",
+    href: "/merchant/supervisors",
+    labelKey: "supervisors",
+    icon: "users",
+    group: "team",
   },
-  {
-    href: "/merchant/videos/experiences",
-    labelKey: "videosExperiences",
-    icon: "messageSquare",
-  },
-  { href: "/merchant/notices", labelKey: "generalNotices", icon: "bell" },
-  { href: "/merchant/products", labelKey: "products", icon: "package" },
-  { href: "/merchant/app-order", labelKey: "orderNewApp", icon: "plusCircle" },
-  { href: "/merchant/store", labelKey: "myStore", icon: "store" },
-  { href: "/merchant/support", labelKey: "support", icon: "lifeBuoy" },
+  { href: "/merchant/store", labelKey: "myStore", icon: "store", group: "account" },
+  { href: "/merchant/support", labelKey: "support", icon: "lifeBuoy", group: "account" },
   {
     href: "/merchant/privacy-policy",
     labelKey: "privacyPolicy",
     icon: "shield",
+    group: "account",
   },
-  { href: "/merchant/settings", labelKey: "settings", icon: "settings" },
+  { href: "/merchant/settings", labelKey: "settings", icon: "settings", group: "account" },
 ];
 
 export function serializeUser(user: SessionUser): SessionUser {

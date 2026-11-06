@@ -19,6 +19,7 @@ import {
   Menu,
   MessageSquare,
   Package,
+  Percent,
   Play,
   PlusCircle,
   Settings,
@@ -26,6 +27,7 @@ import {
   ShoppingCart,
   Smartphone,
   Store,
+  Tag,
   Type,
   User,
   Users,
@@ -63,6 +65,8 @@ const iconMap: Record<NavIconName, LucideIcon> = {
   type: Type,
   lifeBuoy: LifeBuoy,
   shield: Shield,
+  tag: Tag,
+  percent: Percent,
 };
 
 type DashboardLayoutProps = {
@@ -71,6 +75,8 @@ type DashboardLayoutProps = {
   navItems: NavItemConfig[];
   title: string;
   navNamespace: "nav.admin" | "nav.merchant";
+  /** Merchant reference UI: light sidebar + soft canvas */
+  variant?: "default" | "light";
 };
 
 export function DashboardLayout({
@@ -79,6 +85,7 @@ export function DashboardLayout({
   navItems,
   title,
   navNamespace,
+  variant = "default",
 }: DashboardLayoutProps) {
   const tNav = useTranslations(navNamespace);
   const t = useTranslations("common");
@@ -87,6 +94,7 @@ export function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const light = variant === "light";
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -103,60 +111,111 @@ export function DashboardLayout({
 
   const SidebarContent = (
     <>
-      <div className="flex h-16 items-center gap-2 border-b border-white/10 px-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-500 text-sm font-bold text-white">
+      <div
+        className={cn(
+          "flex h-16 items-center gap-2 px-5",
+          light ? "border-b border-slate-100" : "border-b border-white/10"
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold text-white",
+            light ? "bg-slate-900" : "bg-teal-500"
+          )}
+        >
           Z
         </div>
         <div>
-          <p className="text-sm font-semibold text-sidebar-foreground">
+          <p
+            className={cn(
+              "text-sm font-semibold",
+              light ? "text-slate-900" : "text-sidebar-foreground"
+            )}
+          >
             {t("appName")}
           </p>
-          <p className="text-[11px] text-sidebar-muted capitalize">
-            {user.role.toLowerCase()}
+          <p
+            className={cn(
+              "text-[11px] capitalize",
+              light ? "text-slate-500" : "text-sidebar-muted"
+            )}
+          >
+            {user.businessName || user.role.toLowerCase()}
           </p>
         </div>
       </div>
-      <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {navItems.map((item) => {
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+        {navItems.map((item, index) => {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = iconMap[item.icon];
+          const prevGroup = index > 0 ? navItems[index - 1]?.group : undefined;
+          const showDivider =
+            Boolean(item.group) && item.group !== prevGroup && index > 0;
+
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setMobileOpen(false)}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
-                active
-                  ? "bg-teal-600 text-white"
-                  : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{tNav(item.labelKey as "dashboard")}</span>
-              {item.unavailable && (
-                <span
+            <div key={item.href}>
+              {showDivider ? (
+                <div
                   className={cn(
-                    "text-[10px] font-medium",
-                    active ? "text-white/80" : "text-red-400"
+                    "my-3 h-px",
+                    light ? "bg-slate-100" : "bg-white/10"
                   )}
-                >
-                  - {t("unavailable")}
+                />
+              ) : null}
+              <Link
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
+                  light
+                    ? active
+                      ? "bg-slate-100 font-medium text-slate-900"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    : active
+                      ? "bg-teal-600 text-white"
+                      : "text-sidebar-muted hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                )}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1">
+                  {tNav(item.labelKey as "dashboard")}
                 </span>
-              )}
-            </Link>
+                {item.unavailable && (
+                  <span
+                    className={cn(
+                      "text-[10px] font-medium",
+                      active && !light ? "text-white/80" : "text-red-400"
+                    )}
+                  >
+                    - {t("unavailable")}
+                  </span>
+                )}
+              </Link>
+            </div>
           );
         })}
       </nav>
     </>
   );
 
-  // Use logical properties (start/ps) so LTR and RTL both work with dir="rtl".
-  // Do NOT flip with pe/right manually — that double-flips and overlaps the sidebar.
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 start-0 z-40 hidden w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
+    <div
+      className={cn(
+        "min-h-screen",
+        light
+          ? "bg-[linear-gradient(to_right,#eef2f7_1px,transparent_1px),linear-gradient(to_bottom,#eef2f7_1px,transparent_1px)] bg-[size:28px_28px] bg-slate-50"
+          : "bg-background"
+      )}
+    >
+      <aside
+        className={cn(
+          "fixed inset-y-0 start-0 z-40 hidden w-64 flex-col lg:flex",
+          light
+            ? "border-e border-slate-200/80 bg-white text-slate-900 shadow-sm"
+            : "bg-sidebar text-sidebar-foreground"
+        )}
+      >
         {SidebarContent}
       </aside>
 
@@ -168,10 +227,18 @@ export function DashboardLayout({
             onClick={() => setMobileOpen(false)}
             aria-label={t("close")}
           />
-          <aside className="absolute inset-y-0 start-0 flex w-72 flex-col bg-sidebar shadow-xl">
+          <aside
+            className={cn(
+              "absolute inset-y-0 start-0 flex w-72 flex-col shadow-xl",
+              light ? "bg-white" : "bg-sidebar"
+            )}
+          >
             <button
               type="button"
-              className="absolute top-4 end-4 text-sidebar-muted"
+              className={cn(
+                "absolute top-4 end-4",
+                light ? "text-slate-500" : "text-sidebar-muted"
+              )}
               onClick={() => setMobileOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -182,7 +249,14 @@ export function DashboardLayout({
       )}
 
       <div className="lg:ps-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-border bg-card/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-card/80 sm:px-6">
+        <header
+          className={cn(
+            "sticky top-0 z-30 flex h-16 items-center justify-between gap-3 px-4 sm:px-6",
+            light
+              ? "border-b border-slate-200/80 bg-white/90 backdrop-blur"
+              : "border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80"
+          )}
+        >
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -192,7 +266,11 @@ export function DashboardLayout({
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-lg font-semibold tracking-tight">{pageTitle}</h1>
+            <div>
+              <h1 className="text-lg font-semibold tracking-tight text-slate-900">
+                {pageTitle}
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -224,9 +302,16 @@ export function DashboardLayout({
                   setUserMenuOpen((v) => !v);
                   setNotifOpen(false);
                 }}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-muted"
+                className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-muted"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-xs font-semibold text-primary">
+                <span
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold",
+                    light
+                      ? "bg-slate-900 text-white"
+                      : "bg-primary/15 text-primary"
+                  )}
+                >
                   {user.name.charAt(0)}
                 </span>
                 <span className="hidden text-start text-sm sm:block">
