@@ -1,169 +1,38 @@
 import { createClient } from "@supabase/supabase-js";
 import { promises as fs } from "fs";
 import path from "path";
+import {
+  BUILTIN_LAYOUTS,
+  BUILTIN_THEMES,
+  DEFAULT_SECTIONS,
+  inferSectionType,
+  type AppLayout,
+  type AppSection,
+  type AppTheme,
+} from "@/lib/data/app-sections-shared";
 
-export type AppTheme = {
-  key: string;
-  name: string;
-  nameAr: string;
-  description: string;
-  descriptionAr: string;
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-};
+export type {
+  AppLayout,
+  AppSection,
+  AppSectionType,
+  AppTheme,
+} from "@/lib/data/app-sections-shared";
 
-export type AppLayout = {
-  key: string;
-  name: string;
-  nameAr: string;
-  description: string;
-  descriptionAr: string;
-  previewStyle: "classic" | "grid" | "banner" | "tabs" | "cards" | "split";
-};
-
-export type AppSection = {
-  id: string;
-  title: string;
-  titleAr?: string;
-  sortOrder: number;
-  status: string;
-};
+export {
+  ADDABLE_SECTION_TYPES,
+  BUILTIN_LAYOUTS,
+  BUILTIN_THEMES,
+  DEFAULT_SECTIONS,
+  inferSectionType,
+} from "@/lib/data/app-sections-shared";
 
 type LocalPrefs = Record<
   string,
-  { themeKey?: string; layoutKey?: string }
+  { themeKey?: string; layoutKey?: string; sectionOrder?: string[] }
 >;
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const PREFS_FILE = path.join(DATA_DIR, "merchant-app-prefs.json");
-
-export const BUILTIN_THEMES: AppTheme[] = [
-  {
-    key: "teal",
-    name: "Teal Modern",
-    nameAr: "تركواز عصري",
-    description: "Clean teal brand look",
-    descriptionAr: "مظهر تركوازي نظيف",
-    primaryColor: "#0F766E",
-    secondaryColor: "#134E4A",
-    accentColor: "#CCFBF1",
-    backgroundColor: "#F8FAFC",
-  },
-  {
-    key: "royal",
-    name: "Royal Blue",
-    nameAr: "أزرق ملكي",
-    description: "Trust and finance style",
-    descriptionAr: "أسلوب الثقة والمالية",
-    primaryColor: "#1D4ED8",
-    secondaryColor: "#1E3A8A",
-    accentColor: "#DBEAFE",
-    backgroundColor: "#F8FAFC",
-  },
-  {
-    key: "sand",
-    name: "Desert Sand",
-    nameAr: "رمل الصحراء",
-    description: "Warm Saudi-inspired tones",
-    descriptionAr: "ألوان دافئة مستوحاة من السعودية",
-    primaryColor: "#B45309",
-    secondaryColor: "#92400E",
-    accentColor: "#FFEDD5",
-    backgroundColor: "#FFFBEB",
-  },
-  {
-    key: "rose",
-    name: "Rose Soft",
-    nameAr: "وردي ناعم",
-    description: "Soft lifestyle / beauty stores",
-    descriptionAr: "مناسب لمتاجر الجمال ونمط الحياة",
-    primaryColor: "#BE185D",
-    secondaryColor: "#9D174D",
-    accentColor: "#FCE7F3",
-    backgroundColor: "#FFF1F2",
-  },
-  {
-    key: "forest",
-    name: "Forest Green",
-    nameAr: "أخضر الغابة",
-    description: "Natural and calm",
-    descriptionAr: "طبيعي وهادئ",
-    primaryColor: "#166534",
-    secondaryColor: "#14532D",
-    accentColor: "#DCFCE7",
-    backgroundColor: "#F0FDF4",
-  },
-  {
-    key: "night",
-    name: "Night Dark",
-    nameAr: "ليلي داكن",
-    description: "Dark premium mobile look",
-    descriptionAr: "مظهر داكن فاخر للتطبيق",
-    primaryColor: "#0F172A",
-    secondaryColor: "#1E293B",
-    accentColor: "#38BDF8",
-    backgroundColor: "#020617",
-  },
-];
-
-export const BUILTIN_LAYOUTS: AppLayout[] = [
-  {
-    key: "classic",
-    name: "Classic Stack",
-    nameAr: "تخطيط كلاسيكي",
-    description: "Header on top, sections stacked vertically — simple and clear.",
-    descriptionAr: "رأس الصفحة ثم الأقسام بشكل عمودي — بسيط وواضح.",
-    previewStyle: "classic",
-  },
-  {
-    key: "grid",
-    name: "Category Grid",
-    nameAr: "شبكة التصنيفات",
-    description: "Home shows categories in a 2-column grid for fast browsing.",
-    descriptionAr: "تعرض الرئيسية التصنيفات في شبكة عمودين للتصفح السريع.",
-    previewStyle: "grid",
-  },
-  {
-    key: "banner",
-    name: "Banner First",
-    nameAr: "البانر أولاً",
-    description: "Large promo banner first, then offers and categories below.",
-    descriptionAr: "بانر ترويجي كبير أولاً ثم العروض والتصنيفات.",
-    previewStyle: "banner",
-  },
-  {
-    key: "tabs",
-    name: "Bottom Tabs",
-    nameAr: "تبويبات سفلية",
-    description: "Modern bottom tab bar: Home, Offers, Cart, Account.",
-    descriptionAr: "شريط تبويب سفلي حديث: الرئيسية، العروض، السلة، الحساب.",
-    previewStyle: "tabs",
-  },
-  {
-    key: "cards",
-    name: "Spotlight Cards",
-    nameAr: "بطاقات مميزة",
-    description: "Large content cards for offers and featured products.",
-    descriptionAr: "بطاقات كبيرة للعروض والمنتجات المميزة.",
-    previewStyle: "cards",
-  },
-  {
-    key: "split",
-    name: "Split Browse",
-    nameAr: "تصفح مقسّم",
-    description: "Categories on one side, products list on the other.",
-    descriptionAr: "التصنيفات في جانب وقائمة المنتجات في الجانب الآخر.",
-    previewStyle: "split",
-  },
-];
-
-const DEFAULT_SECTIONS: AppSection[] = [
-  { id: "sec-1", title: "Home", titleAr: "الرئيسية", sortOrder: 1, status: "ACTIVE" },
-  { id: "sec-2", title: "Offers", titleAr: "العروض", sortOrder: 2, status: "ACTIVE" },
-  { id: "sec-3", title: "Categories", titleAr: "التصنيفات", sortOrder: 3, status: "ACTIVE" },
-];
 
 function sb() {
   return createClient(
@@ -330,9 +199,30 @@ export async function setMerchantLayoutKey(
   return { source: "local" };
 }
 
+function applyLocalSectionOrder(
+  sections: AppSection[],
+  localOrder?: string[]
+): AppSection[] {
+  if (!localOrder?.length) return sections;
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const ordered: AppSection[] = [];
+  for (const id of localOrder) {
+    const hit = byId.get(id);
+    if (hit) {
+      ordered.push(hit);
+      byId.delete(id);
+    }
+  }
+  for (const rest of byId.values()) ordered.push(rest);
+  return ordered.map((s, i) => ({ ...s, sortOrder: i + 1 }));
+}
+
 export async function listMerchantSections(
   merchantId: string
 ): Promise<AppSection[]> {
+  const local = await readLocalPrefs();
+  const localOrder = local[merchantId]?.sectionOrder;
+
   try {
     const { data, error } = await sb()
       .from("app_sections")
@@ -341,16 +231,62 @@ export async function listMerchantSections(
       .order("sort_order", { ascending: true });
 
     if (!error && data?.length) {
-      return data.map((s) => ({
-        id: s.id,
-        title: s.title,
-        titleAr: s.title_ar || undefined,
-        sortOrder: s.sort_order,
-        status: s.status,
-      }));
+      const mapped = data.map((s) => {
+        const base: AppSection = {
+          id: s.id,
+          title: s.title,
+          titleAr: s.title_ar || undefined,
+          sortOrder: s.sort_order,
+          status: s.status,
+        };
+        return { ...base, type: inferSectionType(base) };
+      });
+      return applyLocalSectionOrder(mapped, localOrder);
     }
   } catch {
     // fall through
   }
-  return DEFAULT_SECTIONS;
+  return applyLocalSectionOrder(DEFAULT_SECTIONS, localOrder);
+}
+
+export async function reorderMerchantSections(
+  merchantId: string,
+  orderedIds: string[]
+): Promise<{ source: "supabase" | "local"; sections: AppSection[] }> {
+  const uniqueIds = orderedIds.map(String).filter(Boolean);
+  if (!uniqueIds.length) {
+    throw new Error("orderedIds required");
+  }
+
+  let wroteSupabase = false;
+  try {
+    const uuidIds = uniqueIds.filter(
+      (id) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          id
+        )
+    );
+    for (let i = 0; i < uuidIds.length; i++) {
+      const { error } = await sb()
+        .from("app_sections")
+        .update({ sort_order: i + 1 })
+        .eq("merchant_id", merchantId)
+        .eq("id", uuidIds[i]);
+      if (error) throw error;
+      wroteSupabase = true;
+    }
+  } catch (err) {
+    console.error("reorderMerchantSections supabase:", err);
+    wroteSupabase = false;
+  }
+
+  const local = await readLocalPrefs();
+  local[merchantId] = { ...local[merchantId], sectionOrder: uniqueIds };
+  await writeLocalPrefs(local);
+
+  const sections = await listMerchantSections(merchantId);
+  return {
+    source: wroteSupabase ? "supabase" : "local",
+    sections,
+  };
 }

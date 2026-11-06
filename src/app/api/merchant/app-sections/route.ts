@@ -6,6 +6,7 @@ import {
   listLayouts,
   listMerchantSections,
   listThemes,
+  reorderMerchantSections,
   setMerchantLayoutKey,
   setMerchantThemeKey,
 } from "@/lib/data/app-sections";
@@ -68,6 +69,35 @@ export async function PATCH(request: NextRequest) {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to save preference";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+/** PUT { orderedIds: string[] } — rearrange app sections */
+export async function PUT(request: NextRequest) {
+  const user = await requireMerchant();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const orderedIds = Array.isArray(body?.orderedIds)
+    ? body.orderedIds.map(String)
+    : [];
+
+  if (!orderedIds.length) {
+    return NextResponse.json(
+      { error: "orderedIds array is required" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const result = await reorderMerchantSections(user.merchantId!, orderedIds);
+    return NextResponse.json({ ok: true, ...result });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to reorder sections";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
