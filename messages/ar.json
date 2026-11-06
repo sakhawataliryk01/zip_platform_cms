@@ -116,7 +116,9 @@
       "dashboard": "الرئيسية",
       "appContent": "محتوى التطبيق",
       "appSections": "أقسام التطبيق",
-      "supervisors": "المشرفون",
+      "appInterface": "تخصيص واجهة التطبيق",
+      "marketing": "التسويق والعروض",
+      "supervisors": "إدارة المشرفين",
       "banners": "البانرات",
       "introPosters": "ملصقات المقدمة",
       "videoCategories": "تصنيفات الفيديو",
@@ -129,9 +131,9 @@
       "privacyPolicy": "سياسة الخصوصية",
       "settings": "الإعدادات",
       "myApp": "تطبيقي",
-      "products": "المنتجات",
-      "orders": "الطلبات",
-      "customers": "العملاء",
+      "products": "المنتجات والتصنيفات",
+      "orders": "إدارة الطلبات",
+      "customers": "إدارة العملاء",
       "notifications": "الإشعارات",
       "subscription": "الاشتراك"
     }
@@ -308,8 +310,22 @@
       "revenueChart": "الإيرادات"
     },
     "sections": {
-      "title": "أقسام التطبيق",
-      "subtitle": "إدارة الأقسام واختيار تصميم تخطيط التطبيق وألوان العلامة.",
+      "title": "تخصيص واجهة التطبيق",
+      "subtitle": "خصص تخطيط متجر الجوال والأقسام وألوان العلامة مع معاينة مباشرة.",
+      "arrangeByCategory": "ترتيب الصفحة",
+      "addCategory": "إضافة قسم",
+      "livePreview": "معاينة مباشرة",
+      "arrangeTitle": "ترتيب الأقسام",
+      "arrangeHint": "اسحب الأقسام لتغيير الترتيب. المعاينة تتحدث فورًا.",
+      "saveArrangement": "حفظ الترتيب",
+      "arrangeSaved": "تم حفظ ترتيب الأقسام",
+      "addComingSoon": "إضافة قسم ستتوفر في التحديث القادم.",
+      "builderSubtitle": "ابنِ الشاشة الرئيسية كتطبيق باني صفحات — رتّب الكتل وشاهد المعاينة مباشرة.",
+      "pageManagement": "إدارة الصفحة",
+      "themeAndLayout": "الثيم والتخطيط",
+      "previewStoreName": "META STORE",
+      "emptyPreview": "أضف أقسامًا لرؤية المعاينة المباشرة.",
+      "sectionAdded": "تمت إضافة القسم — احفظ الترتيب للإبقاء عليه.",
       "sectionName": "القسم",
       "sortOrder": "الترتيب",
       "chooseLayout": "اختر تصميم تخطيط التطبيق",
@@ -326,8 +342,28 @@
       "saveTheme": "حفظ الثيم"
     },
     "supervisors": {
-      "title": "المشرفون",
-      "subtitle": "إدارة المشرفين الذين يساعدون في محتوى التطبيق."
+      "title": "إدارة المشرفين",
+      "subtitle": "أضف وأدر أعضاء الفريق الذين يساعدون في تشغيل تطبيق المتجر.",
+      "addSupervisor": "إضافة مشرف",
+      "searchPlaceholder": "ابحث عن مشرف...",
+      "filter": "تصفية",
+      "name": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "formRequired": "الاسم والبريد مطلوبان",
+      "added": "تمت إضافة المشرف",
+      "columns": {
+        "details": "بيانات المشرف",
+        "role": "الدور والصلاحية",
+        "status": "حالة الحساب",
+        "joined": "تاريخ الانضمام",
+        "actions": "الإجراءات"
+      },
+      "roles": {
+        "systemAdmin": "مدير نظام",
+        "contentManager": "مدير محتوى",
+        "viewer": "مشاهد"
+      }
     },
     "appContent": {
       "title": "محتوى التطبيق",

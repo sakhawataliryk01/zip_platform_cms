@@ -1,5 +1,5 @@
-import { MerchantCmsPageShell } from "@/components/merchant/cms-page-shell";
+import { SupervisorsManager } from "@/components/merchant/supervisors-manager";
 
 export default function MerchantSupervisorsPage() {
-  return <MerchantCmsPageShell namespace="supervisors" />;
+  return <SupervisorsManager />;
 }

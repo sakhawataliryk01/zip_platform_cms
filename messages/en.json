@@ -116,6 +116,8 @@
       "dashboard": "Home",
       "appContent": "App Content",
       "appSections": "App Sections",
+      "appInterface": "App Interface Design",
+      "marketing": "Marketing & Offers",
       "supervisors": "Supervisors",
       "banners": "Banners",
       "introPosters": "Intro Posters",
@@ -129,9 +131,9 @@
       "privacyPolicy": "Privacy Policy",
       "settings": "Settings",
       "myApp": "My App",
-      "products": "Products",
-      "orders": "Orders",
-      "customers": "Customers",
+      "products": "Products & Categories",
+      "orders": "Order Management",
+      "customers": "Customer Management",
       "notifications": "Notifications",
       "subscription": "Subscription"
     }
@@ -308,8 +310,22 @@
       "revenueChart": "Revenue"
     },
     "sections": {
-      "title": "App Sections",
-      "subtitle": "Manage sections, choose an app layout design, and pick brand colors.",
+      "title": "App Interface Design",
+      "subtitle": "Customize your mobile store layout, sections, and brand colors with a live preview.",
+      "arrangeByCategory": "Arrange page",
+      "addCategory": "Add section",
+      "livePreview": "Live preview",
+      "arrangeTitle": "Arrange sections",
+      "arrangeHint": "Drag sections to change order. Preview updates instantly.",
+      "saveArrangement": "Save arrangement",
+      "arrangeSaved": "Section order saved",
+      "addComingSoon": "Add section will be available in the next update.",
+      "builderSubtitle": "Build your mobile home screen like a page builder — rearrange blocks and preview live.",
+      "pageManagement": "Page management",
+      "themeAndLayout": "Theme & layout",
+      "previewStoreName": "META STORE",
+      "emptyPreview": "Add sections to see the live preview.",
+      "sectionAdded": "Section added — save arrangement to keep it.",
       "sectionName": "Section",
       "sortOrder": "Order",
       "chooseLayout": "Choose App Layout Design",
@@ -326,8 +342,28 @@
       "saveTheme": "Save Theme"
     },
     "supervisors": {
-      "title": "Supervisors",
-      "subtitle": "Manage supervisors who can help run your app content."
+      "title": "Supervisor Management",
+      "subtitle": "Add and manage team members who can help run your store app.",
+      "addSupervisor": "Add Supervisor",
+      "searchPlaceholder": "Search supervisors...",
+      "filter": "Filter",
+      "name": "Full name",
+      "email": "Email",
+      "role": "Role",
+      "formRequired": "Name and email are required",
+      "added": "Supervisor added",
+      "columns": {
+        "details": "Supervisor",
+        "role": "Role & permission",
+        "status": "Account status",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "roles": {
+        "systemAdmin": "System Admin",
+        "contentManager": "Content Manager",
+        "viewer": "Viewer"
+      }
     },
     "appContent": {
       "title": "App Content",

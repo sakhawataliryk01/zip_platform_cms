@@ -29,6 +29,10 @@
   --sidebar-foreground: #e2e8f0;
   --sidebar-accent: #1e293b;
   --sidebar-muted: #94a3b8;
+  --merchant-sidebar: #ffffff;
+  --merchant-sidebar-foreground: #0f172a;
+  --merchant-sidebar-accent: #f1f5f9;
+  --merchant-sidebar-muted: #64748b;
   --radius: 0.625rem;
   --chart-1: #0f766e;
   --chart-2: #0284c7;
@@ -61,6 +65,10 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-muted: var(--sidebar-muted);
+  --color-merchant-sidebar: var(--merchant-sidebar);
+  --color-merchant-sidebar-foreground: var(--merchant-sidebar-foreground);
+  --color-merchant-sidebar-accent: var(--merchant-sidebar-accent);
+  --color-merchant-sidebar-muted: var(--merchant-sidebar-muted);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);

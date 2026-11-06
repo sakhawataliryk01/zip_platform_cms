@@ -22,6 +22,7 @@ export default async function MerchantLayout({
       navItems={merchantNavItems}
       title={t("dashboard")}
       navNamespace="nav.merchant"
+      variant="light"
     >
       {children}
     </DashboardLayout>
