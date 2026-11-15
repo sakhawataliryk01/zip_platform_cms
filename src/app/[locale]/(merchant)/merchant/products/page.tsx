@@ -8,27 +8,48 @@ import { toast } from "sonner";
 import { SearchInput } from "@/components/shared/search-input";
 import { EmptyState, LoadingState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { DeskPageHeader } from "@/components/merchant/desk-page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency, cn } from "@/lib/utils";
+import {
+  DESK_DEMO_PRODUCTS,
+  type DeskProductCard,
+} from "@/lib/data/desk-demo-products";
 import type { ZidProduct } from "@/lib/data/zid-store-shared";
 import type { ProductYoutubeReel } from "@/lib/data/product-reel-shared";
 import type { VideoItem } from "@/lib/data/video-shared";
 
+function toCard(p: ZidProduct): DeskProductCard {
+  const demo = DESK_DEMO_PRODUCTS.find((d) => d.id === p.id);
+  return {
+    ...p,
+    category: demo?.category || "General",
+    categoryAr: demo?.categoryAr || "عام",
+    compareAtPrice: demo?.compareAtPrice,
+    stock: demo?.stock ?? 0,
+  };
+}
+
 export default function MerchantProductsPage() {
   const t = useTranslations("merchant.products");
+  const tDesk = useTranslations("merchant.desk");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const isAr = locale === "ar";
 
-  const [products, setProducts] = useState<ZidProduct[]>([]);
+  const [products, setProducts] = useState<DeskProductCard[]>([]);
   const [reels, setReels] = useState<ProductYoutubeReel[]>([]);
   const [channelVideos, setChannelVideos] = useState<VideoItem[]>([]);
   const [search, setSearch] = useState("");
   const [reelSearch, setReelSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [attachProduct, setAttachProduct] = useState<ZidProduct | null>(null);
+  const [usingDemo, setUsingDemo] = useState(false);
+  const [attachProduct, setAttachProduct] = useState<DeskProductCard | null>(
+    null
+  );
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState("");
   const [saving, setSaving] = useState(false);
@@ -48,9 +69,17 @@ export default function MerchantProductsPage() {
 
       if (!productsRes.ok) {
         toast.error(productsData.error || t("loadProductsError"));
-        setProducts([]);
+        setProducts(DESK_DEMO_PRODUCTS);
+        setUsingDemo(true);
       } else {
-        setProducts(productsData.products || []);
+        const list = (productsData.products || []) as ZidProduct[];
+        if (!list.length) {
+          setProducts(DESK_DEMO_PRODUCTS);
+          setUsingDemo(true);
+        } else {
+          setProducts(list.map(toCard));
+          setUsingDemo(false);
+        }
       }
 
       if (!reelsRes.ok) {
@@ -68,6 +97,8 @@ export default function MerchantProductsPage() {
         setChannelVideos([]);
       }
     } catch {
+      setProducts(DESK_DEMO_PRODUCTS);
+      setUsingDemo(true);
       toast.error(tCommon("error"));
     } finally {
       setLoading(false);
@@ -97,31 +128,26 @@ export default function MerchantProductsPage() {
         p.name.toLowerCase().includes(q) ||
         (p.nameAr || "").toLowerCase().includes(q) ||
         (p.sku || "").toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q) ||
         p.id.toLowerCase().includes(q)
     );
   }, [products, search]);
 
   const selectableVideos = useMemo(() => {
     const q = reelSearch.toLowerCase().trim();
-    const alreadyLinkedIds = new Set(
-      attachProduct
-        ? (reelsByProduct.get(attachProduct.id) || []).map((r) => r.youtubeVideoId)
-        : []
-    );
-
     return channelVideos.filter((v) => {
       if (!v.videoUrl) return false;
-      const title = (locale === "ar" && v.titleAr ? v.titleAr : v.title).toLowerCase();
+      const title = (
+        isAr && v.titleAr ? v.titleAr : v.title
+      ).toLowerCase();
       if (q && !title.includes(q) && !v.videoUrl.toLowerCase().includes(q)) {
         return false;
       }
-      // still show already-linked — save will upsert
-      void alreadyLinkedIds;
       return true;
     });
-  }, [channelVideos, reelSearch, locale, attachProduct, reelsByProduct]);
+  }, [channelVideos, reelSearch, isAr]);
 
-  const openAttach = (product: ZidProduct) => {
+  const openAttach = (product: DeskProductCard) => {
     setAttachProduct(product);
     setSelectedVideoId(null);
     setManualUrl("");
@@ -149,7 +175,7 @@ export default function MerchantProductsPage() {
     }
 
     const title =
-      (locale === "ar" && selected?.titleAr ? selected.titleAr : selected?.title) ||
+      (isAr && selected?.titleAr ? selected.titleAr : selected?.title) ||
       attachProduct.name;
 
     setSaving(true);
@@ -206,124 +232,137 @@ export default function MerchantProductsPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="space-y-3">
-          <CardTitle>{t("title")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+      <DeskPageHeader
+        eyebrow={tDesk("storeOperations")}
+        title={t("title")}
+        subtitle={t("deskSubtitle")}
+        actions={
           <SearchInput
             value={search}
             onChange={setSearch}
             placeholder={t("searchPlaceholder")}
-            className="max-w-md"
+            className="w-full sm:w-72"
           />
-        </CardHeader>
-        <CardContent>
-          {filtered.length === 0 ? (
-            <EmptyState title={t("empty")} description={t("emptyHint")} />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[820px] text-sm">
-                <thead>
-                  <tr className="border-b text-start text-muted-foreground">
-                    <th className="pb-3 font-medium">{t("image")}</th>
-                    <th className="pb-3 font-medium">{t("productName")}</th>
-                    <th className="pb-3 font-medium">{t("sku")}</th>
-                    <th className="pb-3 font-medium">{t("price")}</th>
-                    <th className="pb-3 font-medium">{t("linkedReels")}</th>
-                    <th className="pb-3 font-medium">{t("actions")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((p) => {
-                    const linked = reelsByProduct.get(p.id) || [];
-                    const displayName =
-                      locale === "ar" && p.nameAr ? p.nameAr : p.name;
-                    return (
-                      <tr key={p.id} className="border-b border-border/70 align-top">
-                        <td className="py-3">
-                          <div className="relative h-12 w-12 overflow-hidden rounded-md bg-muted">
-                            {p.imageUrl ? (
-                              <Image
-                                src={p.imageUrl}
-                                alt={displayName}
-                                fill
-                                className="object-cover"
-                                unoptimized
-                              />
-                            ) : null}
-                          </div>
-                        </td>
-                        <td className="py-3">
-                          <div className="font-medium">{displayName}</div>
-                          <div className="text-xs text-muted-foreground">
-                            ID: {p.id}
-                          </div>
-                        </td>
-                        <td className="py-3">{p.sku || "—"}</td>
-                        <td className="py-3">
-                          {p.price != null
-                            ? formatCurrency(p.price, p.currency || "SAR", locale)
-                            : "—"}
-                        </td>
-                        <td className="py-3">
-                          {linked.length === 0 ? (
-                            <span className="text-muted-foreground">—</span>
-                          ) : (
-                            <ul className="space-y-2">
-                              {linked.map((reel) => (
-                                <li
-                                  key={reel.id}
-                                  className="flex items-start gap-2 rounded-md bg-muted/50 px-2 py-1.5"
-                                >
-                                  <div className="min-w-0 flex-1">
-                                    <div className="truncate font-medium">
-                                      {reel.title}
-                                    </div>
-                                    <a
-                                      href={reel.url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                                    >
-                                      {reel.youtubeVideoId}
-                                      <ExternalLink className="h-3 w-3" />
-                                    </a>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7 shrink-0 text-destructive"
-                                    onClick={() => setDeleteId(reel.id)}
-                                    aria-label={tCommon("delete")}
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </li>
-                              ))}
-                            </ul>
+        }
+      />
+
+      {usingDemo ? (
+        <p className="text-xs text-desk-muted">{t("demoCatalogNote")}</p>
+      ) : null}
+
+      {filtered.length === 0 ? (
+        <EmptyState title={t("empty")} description={t("emptyHint")} />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((p) => {
+            const displayName = isAr && p.nameAr ? p.nameAr : p.name;
+            const category = isAr ? p.categoryAr : p.category;
+            const linked = reelsByProduct.get(p.id) || [];
+            return (
+              <article
+                key={p.id}
+                className="group overflow-hidden rounded-[1.5rem] border border-[#e7e2d6] bg-white shadow-[0_1px_0_rgba(27,43,33,0.03)] transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <div className="relative aspect-[4/3] bg-[#f3f1ea]">
+                  {p.imageUrl ? (
+                    <Image
+                      src={p.imageUrl}
+                      alt={displayName}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-sm text-desk-muted">
+                      {displayName}
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-3 p-4">
+                  <div>
+                    <h2 className="text-base font-semibold text-desk-ink">
+                      {displayName}
+                    </h2>
+                    <p className="mt-0.5 text-xs text-desk-muted">
+                      {p.sku || "—"}
+                      <span className="mx-1.5 text-[#c5bfb2]">·</span>
+                      {category}
+                    </p>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-3">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <p className="text-lg font-semibold tabular-nums text-desk-ink">
+                        {p.price != null
+                          ? formatCurrency(
+                              p.price,
+                              p.currency || "SAR",
+                              locale
+                            )
+                          : "—"}
+                      </p>
+                      {p.compareAtPrice ? (
+                        <p className="text-sm tabular-nums text-desk-muted line-through">
+                          {formatCurrency(
+                            p.compareAtPrice,
+                            p.currency || "SAR",
+                            locale
                           )}
-                        </td>
-                        <td className="py-3">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openAttach(p)}
+                        </p>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-desk-muted">
+                      {t("stockCount", { count: p.stock })}
+                    </p>
+                  </div>
+
+                  {linked.length > 0 ? (
+                    <ul className="space-y-1.5 border-t border-[#efeae0] pt-3">
+                      {linked.map((reel) => (
+                        <li
+                          key={reel.id}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <a
+                            href={reel.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex min-w-0 flex-1 items-center gap-1 truncate text-desk-green hover:underline"
                           >
-                            <Link2 className="me-1.5 h-3.5 w-3.5" />
-                            {t("attachReel")}
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                            <span className="truncate">{reel.title}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                          </a>
+                          <button
+                            type="button"
+                            className="rounded-lg p-1 text-desk-muted hover:bg-[#f3f1ea] hover:text-destructive"
+                            onClick={() => setDeleteId(reel.id)}
+                            aria-label={tCommon("delete")}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {!usingDemo ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="w-full rounded-full border-[#ddd6c8]"
+                      onClick={() => openAttach(p)}
+                    >
+                      <Link2 className="me-1.5 h-3.5 w-3.5" />
+                      {t("attachReel")}
+                    </Button>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {attachProduct ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -364,9 +403,7 @@ export default function MerchantProductsPage() {
                   selectableVideos.map((video) => {
                     const selected = selectedVideoId === video.id;
                     const title =
-                      locale === "ar" && video.titleAr
-                        ? video.titleAr
-                        : video.title;
+                      isAr && video.titleAr ? video.titleAr : video.title;
                     return (
                       <button
                         key={video.id}

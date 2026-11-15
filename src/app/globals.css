@@ -33,6 +33,15 @@
   --merchant-sidebar-foreground: #0f172a;
   --merchant-sidebar-accent: #f1f5f9;
   --merchant-sidebar-muted: #64748b;
+  --desk-sidebar: #1b2b21;
+  --desk-sidebar-muted: #a8b5ad;
+  --desk-sidebar-accent: #2a3d31;
+  --desk-canvas: #f3f1ea;
+  --desk-card: #ffffff;
+  --desk-ink: #1b2b21;
+  --desk-muted: #6b746e;
+  --desk-green: #3d7a4a;
+  --desk-green-soft: #e7f0e8;
   --radius: 0.625rem;
   --chart-1: #0f766e;
   --chart-2: #0284c7;
@@ -69,6 +78,15 @@
   --color-merchant-sidebar-foreground: var(--merchant-sidebar-foreground);
   --color-merchant-sidebar-accent: var(--merchant-sidebar-accent);
   --color-merchant-sidebar-muted: var(--merchant-sidebar-muted);
+  --color-desk-sidebar: var(--desk-sidebar);
+  --color-desk-sidebar-muted: var(--desk-sidebar-muted);
+  --color-desk-sidebar-accent: var(--desk-sidebar-accent);
+  --color-desk-canvas: var(--desk-canvas);
+  --color-desk-card: var(--desk-card);
+  --color-desk-ink: var(--desk-ink);
+  --color-desk-muted: var(--desk-muted);
+  --color-desk-green: var(--desk-green);
+  --color-desk-green-soft: var(--desk-green-soft);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -92,4 +110,17 @@ body {
 
 [dir="rtl"] .rtl-flip {
   transform: scaleX(-1);
+}
+
+@keyframes desk-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-desk-marquee {
+  animation: desk-marquee 8s linear infinite;
 }

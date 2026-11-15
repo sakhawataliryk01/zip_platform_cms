@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AppWindow,
   BarChart3,
@@ -39,7 +40,18 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { NavIconName, NavItemConfig } from "@/lib/nav";
+import {
+  APP_STYLE_PRESETS,
+  APP_STUDIO_PATHS,
+  merchantAccountNav,
+  merchantAppStudioEditorNav,
+  merchantAppStudioNav,
+  merchantStoreOpsNav,
+  type NavIconName,
+  type NavItemConfig,
+} from "@/lib/nav";
+import { isAppStylePresetKey } from "@/lib/app-style-presets";
+import { useAppStyle } from "@/components/merchant/app-style-provider";
 import type { SessionUser } from "@/types";
 
 const iconMap: Record<NavIconName, LucideIcon> = {
@@ -75,8 +87,8 @@ type DashboardLayoutProps = {
   navItems: NavItemConfig[];
   title: string;
   navNamespace: "nav.admin" | "nav.merchant";
-  /** Merchant reference UI: light sidebar + soft canvas */
-  variant?: "default" | "light";
+  /** Merchant desk: forest sidebar + cream canvas (reference UI) */
+  variant?: "default" | "light" | "desk";
 };
 
 export function DashboardLayout({
@@ -87,6 +99,353 @@ export function DashboardLayout({
   navNamespace,
   variant = "default",
 }: DashboardLayoutProps) {
+  if (variant === "desk") {
+    return (
+      <Suspense
+        fallback={<div className="min-h-screen bg-desk-canvas" aria-hidden />}
+      >
+        <MerchantDeskLayout user={user} title={title}>
+          {children}
+        </MerchantDeskLayout>
+      </Suspense>
+    );
+  }
+
+  return (
+    <ClassicDashboardLayout
+      user={user}
+      navItems={navItems}
+      title={title}
+      navNamespace={navNamespace}
+      light={variant === "light"}
+    >
+      {children}
+    </ClassicDashboardLayout>
+  );
+}
+
+function MerchantDeskLayout({
+  children,
+  user,
+  title,
+}: {
+  children: React.ReactNode;
+  user: SessionUser;
+  title: string;
+}) {
+  const tNav = useTranslations("nav.merchant");
+  const t = useTranslations("common");
+  const tDesk = useTranslations("merchant.desk");
+  const locale = useLocale();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { presetKey, setPresetKey } = useAppStyle();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const storeName = user.businessName || tDesk("defaultStore");
+  const inAppStudio = APP_STUDIO_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
+  const presetParam = searchParams.get("preset");
+  const activeItem =
+    [...merchantStoreOpsNav, ...merchantAppStudioNav, ...merchantAccountNav].find(
+      (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+    ) || null;
+
+  // URL ?preset= syncs into shared style (updates every phone on the desk)
+  useEffect(() => {
+    if (isAppStylePresetKey(presetParam) && presetParam !== presetKey) {
+      setPresetKey(presetParam);
+    }
+  }, [presetParam, presetKey, setPresetKey]);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  };
+
+  const switchLocale = () => {
+    router.replace(pathname, { locale: locale === "ar" ? "en" : "ar" });
+  };
+
+  const NavLink = ({ item }: { item: NavItemConfig }) => {
+    const active =
+      pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const Icon = iconMap[item.icon];
+    return (
+      <Link
+        href={item.href}
+        onClick={() => setMobileOpen(false)}
+        className={cn(
+          "flex items-center gap-3 rounded-full px-3.5 py-2.5 text-sm transition-colors",
+          active
+            ? "bg-[#f3f1ea] font-medium text-[#1b2b21]"
+            : "text-[#c5d0c8] hover:bg-white/5 hover:text-white"
+        )}
+      >
+        <Icon className="h-4 w-4 shrink-0" />
+        <span className="flex-1">{tNav(item.labelKey as "dashboard")}</span>
+      </Link>
+    );
+  };
+
+  const Sidebar = (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-3 px-5 pb-2 pt-5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#3d7a4a] text-white shadow-sm">
+          <Store className="h-5 w-5" />
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-white">
+            {tDesk("brand")}
+          </p>
+          <p className="truncate text-[11px] text-[#a8b5ad]">{storeName}</p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex-1 space-y-5 overflow-y-auto px-3 pb-4">
+        <div>
+          <p className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8a978e]">
+            {tDesk("storeOperations")}
+          </p>
+          <nav className="space-y-0.5">
+            {merchantStoreOpsNav.map((item) => (
+              <NavLink key={item.href} item={item} />
+            ))}
+          </nav>
+        </div>
+
+        <div className="rounded-3xl bg-[#24352a] p-3.5">
+          <p className="px-1 text-[11px] font-medium uppercase tracking-[0.08em] text-[#8a978e]">
+            {tDesk("appStudio")}
+          </p>
+          <p className="mt-1.5 px-1 text-[11px] leading-relaxed text-[#a8b5ad]">
+            {tDesk("appStudioHint")}
+          </p>
+
+          <p className="mb-2 mt-4 px-1 text-xs font-medium text-[#d5ddd7]">
+            {tDesk("customizeLike")}
+          </p>
+          <div className="space-y-0.5">
+            {APP_STYLE_PRESETS.map((preset) => {
+              const selected = presetKey === preset.key;
+              return (
+                <Link
+                  key={preset.key}
+                  href={`/merchant/app?preset=${preset.key}`}
+                  onClick={() => {
+                    if (isAppStylePresetKey(preset.key)) {
+                      setPresetKey(preset.key);
+                    }
+                    setMobileOpen(false);
+                  }}
+                  className={cn(
+                    "flex items-start gap-2.5 rounded-xl px-2 py-2 text-sm transition",
+                    selected
+                      ? "bg-[#1b2b21] text-white"
+                      : "text-[#c5d0c8] hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  <span
+                    className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: preset.color }}
+                  />
+                  <span className="min-w-0">
+                    <span className="block font-medium">
+                      {tNav(preset.labelKey as "dashboard")}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] leading-snug text-[#8a978e]">
+                      {tNav(preset.hintKey as "dashboard")}
+                    </span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 space-y-0.5 border-t border-white/10 pt-3">
+            {merchantAppStudioEditorNav.map((item) => {
+              const active =
+                item.href === "/merchant/app"
+                  ? pathname === "/merchant/app"
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={cn(
+                    "flex items-center rounded-full px-3 py-2 text-sm transition",
+                    active
+                      ? "bg-desk-green font-medium text-white"
+                      : "text-[#c5d0c8] hover:bg-white/5 hover:text-white"
+                  )}
+                >
+                  {item.labelKey === "overview"
+                    ? tDesk("overview")
+                    : tDesk(`studioNav.${item.labelKey}`)}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-0.5 px-0.5">
+          {merchantAppStudioNav
+            .filter((i) => i.href !== "/merchant/sections")
+            .slice(0, 3)
+            .map((item) => (
+              <NavLink key={item.href} item={item} />
+            ))}
+          {merchantAccountNav.slice(0, 2).map((item) => (
+            <NavLink key={item.href} item={item} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-desk-canvas text-desk-ink">
+      <aside className="fixed inset-y-0 start-0 z-40 hidden w-[272px] flex-col bg-desk-sidebar text-white lg:flex">
+        {Sidebar}
+      </aside>
+
+      {mobileOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/45"
+            onClick={() => setMobileOpen(false)}
+            aria-label={t("close")}
+          />
+          <aside className="absolute inset-y-0 start-0 flex w-[288px] flex-col bg-desk-sidebar text-white shadow-2xl">
+            <button
+              type="button"
+              className="absolute end-4 top-4 text-[#a8b5ad]"
+              onClick={() => setMobileOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            {Sidebar}
+          </aside>
+        </div>
+      ) : null}
+
+      <div className="lg:ps-[272px]">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-[#e4e0d6] bg-[#f3f1ea]/90 px-4 backdrop-blur sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <p className="truncate text-sm text-desk-muted">
+                {inAppStudio
+                  ? tDesk("appStudio")
+                  : tDesk("storeOperations")}
+                <span className="mx-1.5 text-[#c5bfb2]">/</span>
+                <span className="text-desk-ink">{storeName}</span>
+              </p>
+              <p className="truncate text-xs text-[#9a9488] lg:hidden">
+                {activeItem
+                  ? tNav(activeItem.labelKey as "dashboard")
+                  : title}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            <p className="hidden text-xs text-[#9a9488] md:block">
+              {tDesk("savedLocally")}
+            </p>
+            <button
+              type="button"
+              onClick={switchLocale}
+              className="rounded-full px-3 py-1.5 text-sm text-desk-ink transition hover:bg-black/5"
+            >
+              {locale === "ar" ? "English" : "العربية"}
+            </button>
+
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1b2b21] text-sm font-semibold text-white"
+                aria-label={user.name}
+              >
+                {user.name.charAt(0).toUpperCase()}
+              </button>
+              {userMenuOpen ? (
+                <div className="absolute end-0 top-11 z-50 w-52 rounded-2xl border border-[#e4e0d6] bg-white py-1 shadow-lg">
+                  <MenuLink
+                    href="/merchant/settings"
+                    icon={User}
+                    label={t("profile")}
+                    onClick={() => setUserMenuOpen(false)}
+                  />
+                  <MenuLink
+                    href="/merchant/settings"
+                    icon={Settings}
+                    label={t("settings")}
+                    onClick={() => setUserMenuOpen(false)}
+                  />
+                  <MenuLink
+                    href="/merchant/settings"
+                    icon={KeyRound}
+                    label={t("changePassword")}
+                    onClick={() => setUserMenuOpen(false)}
+                  />
+                  <button
+                    type="button"
+                    onClick={logout}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    {t("logout")}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            <Link
+              href="/merchant/app"
+              className="hidden items-center rounded-full bg-desk-green px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#346940] sm:inline-flex"
+            >
+              {tDesk("customizeApp")}
+            </Link>
+          </div>
+        </header>
+
+        <main className="p-4 sm:p-6 lg:p-7">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+function ClassicDashboardLayout({
+  children,
+  user,
+  navItems,
+  title,
+  navNamespace,
+  light,
+}: {
+  children: React.ReactNode;
+  user: SessionUser;
+  navItems: NavItemConfig[];
+  title: string;
+  navNamespace: "nav.admin" | "nav.merchant";
+  light: boolean;
+}) {
   const tNav = useTranslations(navNamespace);
   const t = useTranslations("common");
   const pathname = usePathname();
@@ -94,7 +453,6 @@ export function DashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
-  const light = variant === "light";
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

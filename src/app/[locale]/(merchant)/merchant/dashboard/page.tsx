@@ -6,7 +6,8 @@ export default async function MerchantDashboardPage() {
   const user = await getSession();
   const data = await getMerchantCmsDashboard(
     user?.merchantId,
-    user?.name || "Admin"
+    user?.name || "Ahmad",
+    user?.businessName || "Al Noor Store"
   );
 
   return <MerchantDashboardView data={data} />;

@@ -39,6 +39,7 @@
     "disable": "Disable",
     "reconnect": "Reconnect",
     "sync": "Sync Now",
+    "refresh": "Refresh",
     "connect": "Connect",
     "download": "Download",
     "upgrade": "Upgrade",
@@ -117,7 +118,7 @@
       "appContent": "App Content",
       "appSections": "App Sections",
       "appInterface": "App Interface Design",
-      "marketing": "Marketing & Offers",
+      "marketing": "Marketing",
       "supervisors": "Supervisors",
       "banners": "Banners",
       "introPosters": "Intro Posters",
@@ -131,11 +132,23 @@
       "privacyPolicy": "Privacy Policy",
       "settings": "Settings",
       "myApp": "My App",
-      "products": "Products & Categories",
-      "orders": "Order Management",
-      "customers": "Customer Management",
+      "products": "Products",
+      "orders": "Orders",
+      "customers": "Customers",
       "notifications": "Notifications",
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "likeKeeta": "Like Keeta",
+      "likeKeetaHint": "Location, categories, past orders",
+      "likeNoon": "Like Noon",
+      "likeNoonHint": "Yellow, deal cards, and an offer countdown",
+      "likeAmazon": "Like Amazon",
+      "likeAmazonHint": "Stars, before-and-after price, product details first",
+      "likeShein": "Like Shein",
+      "likeSheinHint": "Fashion focus, round categories",
+      "likeJahez": "Like Jahez",
+      "likeJahezHint": "Delivery focus, pinned order button",
+      "likeSalla": "Like Salla",
+      "likeSallaHint": "Classic store layout"
     }
   },
   "admin": {
@@ -238,6 +251,7 @@
     },
     "notifications": {
       "title": "Notifications",
+      "subtitle": "Merchant design requests and platform alerts.",
       "create": "Create Notification",
       "titleField": "Title",
       "message": "Message",
@@ -246,7 +260,25 @@
       "scheduleLater": "Schedule for later",
       "send": "Send Notification",
       "history": "Notification History",
-      "allMerchants": "All Merchants"
+      "allMerchants": "All Merchants",
+      "designRequests": "Merchant design requests",
+      "designRequestsHint": "When a merchant changes App Studio design, it appears here with a live phone preview of the look they want.",
+      "noDesignRequests": "No design requests yet. They appear when a merchant edits App Studio.",
+      "designBadge": "Design",
+      "live": "Live",
+      "livePreview": "Live updates",
+      "customerPreview": "Customer wants this look",
+      "markRead": "Mark as read",
+      "fields": {
+        "preset": "Preset",
+        "theme": "Theme",
+        "colors": "Colors",
+        "typeface": "Typeface",
+        "banner": "Banner layout",
+        "productCard": "Product card",
+        "category": "Category layout",
+        "header": "Header style"
+      }
     },
     "reports": {
       "title": "Reports",
@@ -261,10 +293,52 @@
     }
   },
   "merchant": {
+    "desk": {
+      "brand": "Merchant desk",
+      "defaultStore": "Al Noor Store",
+      "storeOperations": "Store operations",
+      "appStudio": "App studio",
+      "appStudioHint": "Look and content stay separate from orders and products.",
+      "customizeLike": "Customize like",
+      "overview": "Overview",
+      "customizeApp": "Customize the app",
+      "savedLocally": "Saved on this device",
+      "studioNav": {
+        "appearance": "Appearance",
+        "homeOrder": "Home order",
+        "banners": "Banners",
+        "productCards": "Product cards",
+        "categories": "Categories"
+      }
+    },
     "dashboard": {
       "title": "Home",
       "welcome": "Welcome, {name}",
+      "goodMorning": "Good morning, {name}",
+      "goodAfternoon": "Good afternoon, {name}",
+      "goodEvening": "Good evening, {name}",
+      "todayAtStore": "Today at the store",
+      "deskSubtitle": "Store operations stay here. App look and content live in App studio.",
       "subtitle": "Manage your store app content, notices, and Zid connection from one place.",
+      "kpiOrders": "Orders",
+      "kpiSales": "Sales",
+      "kpiNewCustomers": "New customers",
+      "kpiAppVisits": "App visits",
+      "vsYesterday": "vs yesterday",
+      "appStatus": "App status",
+      "appStatusHint": "Live preview of your customer app home screen.",
+      "visitsChart": "App visits — 7 days",
+      "last7Days": "Last 7 days",
+      "latestOrders": "Latest orders",
+      "viewAll": "View all",
+      "previewAdsBar": "Free shipping on orders over SAR 200",
+      "previewSeasonOffers": "Season offers",
+      "previewProduct": "Smart watch Pro",
+      "orderStatus": {
+        "COMPLETED": "Completed",
+        "NEW": "New",
+        "PROCESSING": "Processing"
+      },
       "tapToOpen": "Tap to open",
       "ctaNotices": "General Notices",
       "quickActions": "Quick actions",
@@ -577,9 +651,139 @@
       "authorizationPresent": "Saved (server-only)",
       "authorizationMissing": "Missing — reconnect with OAuth"
     },
+    "appStudio": {
+      "title": "Customize the interface, one part at a time",
+      "subtitle": "Orders do not mix with colors. Each tool opens its own page, and the preview updates immediately.",
+      "livePreview": "Live preview",
+      "previewUpdatesHint": "Edits on the right update this phone instantly — and across the desk.",
+      "liveEditHint": "Changes apply to the live phone immediately.",
+      "openFullPage": "Open full page →",
+      "introPostersLiveHint": "Intro posters show on first app open. Manage assets from the full Intro posters page.",
+      "fields": {
+        "storeNameEn": "Store name (English)",
+        "storeNameAr": "Store name (Arabic)",
+        "primaryColor": "Primary / bar color",
+        "secondaryColor": "Secondary / hero color",
+        "promoEn": "Promo text (English)",
+        "promoAr": "Promo text (Arabic)",
+        "heroTitleEn": "Hero title",
+        "heroHintEn": "Hero subtitle",
+        "announcementStyle": "Announcement style",
+        "productCardStyle": "Product card style",
+        "showStars": "Show star rating",
+        "showComparePrice": "Show compare-at price",
+        "categoryLayout": "Category layout",
+        "showReels": "Show reels strip"
+      },
+      "previewPromoBar": "Use 10% off now",
+      "previewOffers": "Today's offers",
+      "previewOffersHint": "Up to 50% off selected items",
+      "previewOrderNow": "Order now",
+      "previewProduct": "Smart watch Pro",
+      "pages": {
+        "design": {
+          "title": "App identity",
+          "subtitle": "Colors, type, the store name in Arabic and English, and the header style.",
+          "storeNameEn": "Store name in English",
+          "storeNameAr": "Store name in Arabic",
+          "readyThemes": "Ready themes",
+          "primaryColor": "Primary color",
+          "secondaryColor": "Secondary color",
+          "typeface": "Typeface",
+          "headerStyle": "Header style",
+          "bottomBar": "Bottom bar"
+        },
+        "homeOrder": {
+          "title": "Home page order",
+          "subtitle": "Show or hide each section, then reorder them. Not the place for colors or banners.",
+          "hint": "Drag with the arrows. Hidden sections stay out of the live phone.",
+          "order": "Order",
+          "shown": "Shown",
+          "hidden": "Hidden"
+        },
+        "banners": {
+          "title": "Banners",
+          "subtitle": "Forty layouts. The photo, title, and button show in the preview.",
+          "gridTitle": "40 banner layouts"
+        },
+        "cards": {
+          "title": "Product cards",
+          "subtitle": "Real store cards: a product photo, a two-line name, the price before discount, and a rating.",
+          "gridTitle": "40 product-card layouts"
+        },
+        "categories": {
+          "title": "Categories",
+          "subtitle": "Twenty category layouts. Upload a photo and add an English name so it appears when the language switches.",
+          "gridTitle": "20 category layouts",
+          "options": "Category options",
+          "showCount": "Show count",
+          "showPhoto": "Show photo"
+        }
+      },
+      "screens": {
+        "home": "Home",
+        "categories": "Categories",
+        "cart": "Cart",
+        "profile": "Profile",
+        "search": "Search",
+        "searchPlaceholder": "Search products",
+        "items": "items",
+        "addToCart": "Add to cart",
+        "viewCart": "Cart",
+        "cartEmpty": "Your cart is empty",
+        "continueShopping": "Continue shopping",
+        "total": "Total",
+        "checkout": "Checkout",
+        "guestUser": "Guest shopper",
+        "profileHint": "Orders, addresses, and saved items",
+        "orders": "My orders",
+        "addresses": "Addresses",
+        "wishlist": "Wishlist",
+        "settings": "Settings",
+        "productDesc": "Premium quality with fast delivery across Saudi Arabia.",
+        "tapHint": "Tap inside the screen the way a customer would."
+      },
+      "tools": {
+        "appearance": {
+          "title": "Appearance",
+          "desc": "Colors, type, the store name in Arabic and English, and the header style."
+        },
+        "homeOrder": {
+          "title": "Home order",
+          "desc": "Which sections show, and in what order, on the first screen."
+        },
+        "banners": {
+          "title": "Banners",
+          "desc": "Forty layouts. The photo, title, and button show in the preview."
+        },
+        "productCards": {
+          "title": "Product cards",
+          "desc": "Forty store cards: photo, price, discount, and rating."
+        },
+        "categories": {
+          "title": "Categories",
+          "desc": "Twenty layouts. Add sections, upload a photo, and set an English name."
+        },
+        "introPosters": {
+          "title": "Intro posters",
+          "desc": "Welcome screens the first time the app opens."
+        },
+        "announcementBar": {
+          "title": "Announcement bar",
+          "desc": "Twenty bar styles: pill, marquee, frame, and tag."
+        },
+        "reels": {
+          "title": "Reels",
+          "desc": "Short clips with covers, and 12 ways to show them in the app."
+        }
+      }
+    },
     "products": {
       "title": "Products",
       "subtitle": "Products from your connected Zid store. Attach a Short from your synced channel reels to any product for the Flutter app.",
+      "deskSubtitle": "The sales catalog. Where it appears in the app is set from the home layout.",
+      "demoCatalogNote": "Showing a sample catalog until your Zid store products sync.",
+      "stockCount": "Stock {count}",
       "searchPlaceholder": "Search products...",
       "productName": "Product Name",
       "sku": "SKU",
