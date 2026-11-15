@@ -39,6 +39,7 @@
     "disable": "تعطيل",
     "reconnect": "إعادة الاتصال",
     "sync": "مزامنة الآن",
+    "refresh": "تحديث",
     "connect": "اتصال",
     "download": "تحميل",
     "upgrade": "ترقية",
@@ -135,7 +136,19 @@
       "orders": "إدارة الطلبات",
       "customers": "إدارة العملاء",
       "notifications": "الإشعارات",
-      "subscription": "الاشتراك"
+      "subscription": "الاشتراك",
+      "likeKeeta": "مثل كيتا",
+      "likeKeetaHint": "الموقع، التصنيفات، الطلبات السابقة",
+      "likeNoon": "مثل نون",
+      "likeNoonHint": "أصفر، بطاقات عروض، وعدّ تنازلي",
+      "likeAmazon": "مثل أمازون",
+      "likeAmazonHint": "تقييمات، سعر قبل وبعد، تفاصيل المنتج أولاً",
+      "likeShein": "مثل شي إن",
+      "likeSheinHint": "تركيز على الأزياء، تصنيفات دائرية",
+      "likeJahez": "مثل جاهز",
+      "likeJahezHint": "تركيز على التوصيل، زر طلب ثابت",
+      "likeSalla": "مثل سلة",
+      "likeSallaHint": "تخطيط متجر كلاسيكي"
     }
   },
   "admin": {
@@ -238,6 +251,7 @@
     },
     "notifications": {
       "title": "الإشعارات",
+      "subtitle": "طلبات تصميم التجار وتنبيهات المنصة.",
       "create": "إنشاء إشعار",
       "titleField": "العنوان",
       "message": "الرسالة",
@@ -246,7 +260,25 @@
       "scheduleLater": "جدولة لاحقاً",
       "send": "إرسال الإشعار",
       "history": "سجل الإشعارات",
-      "allMerchants": "جميع التجار"
+      "allMerchants": "جميع التجار",
+      "designRequests": "طلبات تصميم التجار",
+      "designRequestsHint": "عند تغيير التاجر تصميم التطبيق في App Studio يظهر هنا مع معاينة حية للشكل المطلوب.",
+      "noDesignRequests": "لا توجد طلبات تصميم بعد. تظهر عند تعديل التاجر لـ App Studio.",
+      "designBadge": "تصميم",
+      "live": "مباشر",
+      "livePreview": "تحديث مباشر",
+      "customerPreview": "هذا هو الشكل الذي يريده العميل",
+      "markRead": "تعيين كمقروء",
+      "fields": {
+        "preset": "القالب",
+        "theme": "السمة",
+        "colors": "الألوان",
+        "typeface": "الخط",
+        "banner": "تخطيط البانر",
+        "productCard": "بطاقة المنتج",
+        "category": "تخطيط التصنيف",
+        "header": "نمط الترويسة"
+      }
     },
     "reports": {
       "title": "التقارير",
@@ -261,10 +293,52 @@
     }
   },
   "merchant": {
+    "desk": {
+      "brand": "مكتب التاجر",
+      "defaultStore": "متجر النور",
+      "storeOperations": "عمليات المتجر",
+      "appStudio": "استوديو التطبيق",
+      "appStudioHint": "المظهر والمحتوى منفصلان عن الطلبات والمنتجات.",
+      "customizeLike": "خصّص مثل",
+      "overview": "نظرة عامة",
+      "customizeApp": "تخصيص التطبيق",
+      "savedLocally": "محفوظ على هذا الجهاز",
+      "studioNav": {
+        "appearance": "المظهر",
+        "homeOrder": "ترتيب الرئيسية",
+        "banners": "البانرات",
+        "productCards": "بطاقات المنتجات",
+        "categories": "التصنيفات"
+      }
+    },
     "dashboard": {
       "title": "الرئيسية",
       "welcome": "مرحباً، {name}",
+      "goodMorning": "صباح الخير، {name}",
+      "goodAfternoon": "مساء الخير، {name}",
+      "goodEvening": "مساء الخير، {name}",
+      "todayAtStore": "اليوم في المتجر",
+      "deskSubtitle": "عمليات المتجر هنا. مظهر التطبيق ومحتواه في استوديو التطبيق.",
       "subtitle": "أدِر محتوى تطبيق المتجر والإشعارات واتصال زد من مكان واحد.",
+      "kpiOrders": "الطلبات",
+      "kpiSales": "المبيعات",
+      "kpiNewCustomers": "عملاء جدد",
+      "kpiAppVisits": "زيارات التطبيق",
+      "vsYesterday": "مقارنة بالأمس",
+      "appStatus": "حالة التطبيق",
+      "appStatusHint": "معاينة مباشرة للشاشة الرئيسية لتطبيق العملاء.",
+      "visitsChart": "زيارات التطبيق — 7 أيام",
+      "last7Days": "آخر 7 أيام",
+      "latestOrders": "أحدث الطلبات",
+      "viewAll": "عرض الكل",
+      "previewAdsBar": "شحن مجاني للطلبات فوق 200 ر.س",
+      "previewSeasonOffers": "عروض الموسم",
+      "previewProduct": "ساعة ذكية برو",
+      "orderStatus": {
+        "COMPLETED": "مكتمل",
+        "NEW": "جديد",
+        "PROCESSING": "قيد المعالجة"
+      },
       "tapToOpen": "اضغط للفتح",
       "ctaNotices": "الإشعارات العامة",
       "quickActions": "إجراءات سريعة",
@@ -577,9 +651,139 @@
       "authorizationPresent": "محفوظ (على الخادم فقط)",
       "authorizationMissing": "غير موجود — أعد الاتصال عبر OAuth"
     },
+    "appStudio": {
+      "title": "خصّص الواجهة، جزءًا جزءًا",
+      "subtitle": "الطلبات لا تختلط بالألوان. كل أداة تفتح صفحتها، والمعاينة تتحدث فورًا.",
+      "livePreview": "معاينة مباشرة",
+      "previewUpdatesHint": "التعديلات على اليمين تحدّث الهاتف فورًا — وفي كل المكتب.",
+      "liveEditHint": "التغييرات تظهر على الهاتف مباشرة.",
+      "openFullPage": "فتح الصفحة الكاملة ←",
+      "introPostersLiveHint": "ملصقات المقدمة تظهر عند فتح التطبيق لأول مرة. أدِر الملفات من صفحة الملصقات.",
+      "fields": {
+        "storeNameEn": "اسم المتجر (إنجليزي)",
+        "storeNameAr": "اسم المتجر (عربي)",
+        "primaryColor": "اللون الأساسي / الشريط",
+        "secondaryColor": "اللون الثانوي / البانر",
+        "promoEn": "نص العرض (إنجليزي)",
+        "promoAr": "نص العرض (عربي)",
+        "heroTitleEn": "عنوان البانر",
+        "heroHintEn": "وصف البانر",
+        "announcementStyle": "أسلوب شريط الإعلان",
+        "productCardStyle": "أسلوب بطاقة المنتج",
+        "showStars": "إظهار التقييم بالنجوم",
+        "showComparePrice": "إظهار السعر قبل الخصم",
+        "categoryLayout": "تخطيط التصنيفات",
+        "showReels": "إظهار شريط الريلز"
+      },
+      "previewPromoBar": "استخدم خصم 10٪ الآن",
+      "previewOffers": "عروض اليوم",
+      "previewOffersHint": "خصم حتى 50٪ على منتجات مختارة",
+      "previewOrderNow": "اطلب الآن",
+      "previewProduct": "ساعة ذكية برو",
+      "pages": {
+        "design": {
+          "title": "هوية التطبيق",
+          "subtitle": "الألوان، الخط، اسم المتجر بالعربية والإنجليزية، وأسلوب الرأس.",
+          "storeNameEn": "اسم المتجر بالإنجليزية",
+          "storeNameAr": "اسم المتجر بالعربية",
+          "readyThemes": "ثيمات جاهزة",
+          "primaryColor": "اللون الأساسي",
+          "secondaryColor": "اللون الثانوي",
+          "typeface": "الخط",
+          "headerStyle": "أسلوب الرأس",
+          "bottomBar": "الشريط السفلي"
+        },
+        "homeOrder": {
+          "title": "ترتيب الصفحة الرئيسية",
+          "subtitle": "أظهر أو أخفِ كل قسم ثم أعد الترتيب. ليست مكان الألوان أو البانرات.",
+          "hint": "استخدم الأسهم للترتيب. الأقسام المخفية لا تظهر في الهاتف.",
+          "order": "الترتيب",
+          "shown": "ظاهر",
+          "hidden": "مخفي"
+        },
+        "banners": {
+          "title": "البانرات",
+          "subtitle": "أربعون تخطيطًا. الصورة والعنوان والزر تظهر في المعاينة.",
+          "gridTitle": "40 تخطيط بانر"
+        },
+        "cards": {
+          "title": "بطاقات المنتجات",
+          "subtitle": "بطاقات متجر حقيقية: صورة، اسم بسطرين، السعر قبل الخصم، والتقييم.",
+          "gridTitle": "40 تخطيط بطاقة منتج"
+        },
+        "categories": {
+          "title": "التصنيفات",
+          "subtitle": "عشرون تخطيطًا. ارفع صورة وأضف اسمًا إنجليزيًا ليظهر عند تبديل اللغة.",
+          "gridTitle": "20 تخطيط تصنيف",
+          "options": "خيارات التصنيف",
+          "showCount": "إظهار العدد",
+          "showPhoto": "إظهار الصورة"
+        }
+      },
+      "screens": {
+        "home": "الرئيسية",
+        "categories": "التصنيفات",
+        "cart": "السلة",
+        "profile": "حسابي",
+        "search": "بحث",
+        "searchPlaceholder": "ابحث عن منتجات",
+        "items": "عناصر",
+        "addToCart": "أضف إلى السلة",
+        "viewCart": "السلة",
+        "cartEmpty": "سلتك فارغة",
+        "continueShopping": "متابعة التسوق",
+        "total": "الإجمالي",
+        "checkout": "إتمام الشراء",
+        "guestUser": "زائر",
+        "profileHint": "الطلبات والعناوين والعناصر المحفوظة",
+        "orders": "طلباتي",
+        "addresses": "العناوين",
+        "wishlist": "المفضلة",
+        "settings": "الإعدادات",
+        "productDesc": "جودة ممتازة مع توصيل سريع في أنحاء السعودية.",
+        "tapHint": "اضغط داخل الشاشة كما يفعل العميل."
+      },
+      "tools": {
+        "appearance": {
+          "title": "المظهر",
+          "desc": "الألوان، الخط، اسم المتجر بالعربية والإنجليزية، وأسلوب الرأس."
+        },
+        "homeOrder": {
+          "title": "ترتيب الرئيسية",
+          "desc": "أي أقسام تظهر، وبأي ترتيب، على الشاشة الأولى."
+        },
+        "banners": {
+          "title": "البانرات",
+          "desc": "أربعون تخطيطًا. الصورة والعنوان والزر تظهر في المعاينة."
+        },
+        "productCards": {
+          "title": "بطاقات المنتجات",
+          "desc": "أربعون بطاقة: صورة، سعر، خصم، وتقييم."
+        },
+        "categories": {
+          "title": "التصنيفات",
+          "desc": "عشرون تخطيطًا. أضف أقسامًا، ارفع صورة، وعيّن اسمًا."
+        },
+        "introPosters": {
+          "title": "ملصقات المقدمة",
+          "desc": "شاشات ترحيب عند فتح التطبيق لأول مرة."
+        },
+        "announcementBar": {
+          "title": "شريط الإعلان",
+          "desc": "عشرون أسلوبًا: حبة، شريط متحرك، إطار، ووسم."
+        },
+        "reels": {
+          "title": "الريلز",
+          "desc": "مقاطع قصيرة مع أغلفة، و12 طريقة لعرضها في التطبيق."
+        }
+      }
+    },
     "products": {
       "title": "المنتجات",
       "subtitle": "منتجات متجر زد المتصل. اختر ريلًا من ريلز قناتك المزامنة واربطه بأي منتج لتطبيق فلاتر.",
+      "deskSubtitle": "كتالوج المبيعات. مكان ظهوره في التطبيق يُضبط من تخطيط الرئيسية.",
+      "demoCatalogNote": "عرض كتالوج تجريبي إلى أن تتم مزامنة منتجات متجر زد.",
+      "stockCount": "المخزون {count}",
       "searchPlaceholder": "البحث في المنتجات...",
       "productName": "اسم المنتج",
       "sku": "رمز المنتج",

@@ -24,6 +24,15 @@ import {
   type AppTheme,
 } from "@/lib/data/app-sections-shared";
 import { LoadingState } from "@/components/shared/empty-state";
+import { useAppStyle } from "@/components/merchant/app-style-provider";
+import type { AppStylePresetKey } from "@/lib/app-style-presets";
+
+const THEME_TO_PRESET: Record<string, AppStylePresetKey> = {
+  teal: "salla",
+  royal: "salla",
+  sand: "noon",
+  rose: "shein",
+};
 
 function sectionPreviewBlock(
   type: AppSectionType,
@@ -163,6 +172,7 @@ export function AppInterfaceBuilder() {
   const [selectedLayoutKey, setSelectedLayoutKey] = useState("classic");
   const [sections, setSections] = useState<AppSection[]>([]);
   const [dirty, setDirty] = useState(false);
+  const { setPresetKey } = useAppStyle();
 
   const load = async () => {
     setLoading(true);
@@ -249,7 +259,11 @@ export function AppInterfaceBuilder() {
     themeKey?: string;
     layoutKey?: string;
   }) => {
-    if (payload.themeKey) setSelectedThemeKey(payload.themeKey);
+    if (payload.themeKey) {
+      setSelectedThemeKey(payload.themeKey);
+      const mapped = THEME_TO_PRESET[payload.themeKey];
+      if (mapped) setPresetKey(mapped);
+    }
     if (payload.layoutKey) setSelectedLayoutKey(payload.layoutKey);
     setSaving(true);
     try {

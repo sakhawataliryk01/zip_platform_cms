@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { merchantNavItems, serializeUser } from "@/lib/nav";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { MerchantDeskProviders } from "@/components/merchant/merchant-desk-providers";
 
 export default async function MerchantLayout({
   children,
@@ -17,14 +18,16 @@ export default async function MerchantLayout({
   const t = await getTranslations("nav.merchant");
 
   return (
-    <DashboardLayout
-      user={serializeUser(user)}
-      navItems={merchantNavItems}
-      title={t("dashboard")}
-      navNamespace="nav.merchant"
-      variant="light"
-    >
-      {children}
-    </DashboardLayout>
+    <MerchantDeskProviders>
+      <DashboardLayout
+        user={serializeUser(user)}
+        navItems={merchantNavItems}
+        title={t("dashboard")}
+        navNamespace="nav.merchant"
+        variant="desk"
+      >
+        {children}
+      </DashboardLayout>
+    </MerchantDeskProviders>
   );
 }

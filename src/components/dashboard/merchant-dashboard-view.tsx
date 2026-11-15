@@ -1,76 +1,88 @@
 "use client";
 
+import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  Bell,
-  Film,
-  Image as ImageIcon,
-  Images,
-  LayoutGrid,
-  LifeBuoy,
-  Package,
-  Play,
-  PlusCircle,
-  Smartphone,
-  Store,
-  Type,
-} from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import type { MerchantCmsDashboardData } from "@/lib/data/merchant-cms";
+import { LiveAppPhone } from "@/components/merchant/live-app-phone";
 
-const QUICK_ACTIONS = [
-  {
-    href: "/merchant/notices",
-    labelKey: "quickNotices" as const,
-    descKey: "quickNoticesDesc" as const,
-    icon: Bell,
-  },
-  {
-    href: "/merchant/banners",
-    labelKey: "quickBanners" as const,
-    descKey: "quickBannersDesc" as const,
-    icon: ImageIcon,
-  },
-  {
-    href: "/merchant/intro-posters",
-    labelKey: "quickIntro" as const,
-    descKey: "quickIntroDesc" as const,
-    icon: Images,
-  },
-  {
-    href: "/merchant/app-content",
-    labelKey: "quickAppContent" as const,
-    descKey: "quickAppContentDesc" as const,
-    icon: Type,
-  },
-  {
-    href: "/merchant/products",
-    labelKey: "quickProducts" as const,
-    descKey: "quickProductsDesc" as const,
-    icon: Package,
-  },
-  {
-    href: "/merchant/store",
-    labelKey: "quickStore" as const,
-    descKey: "quickStoreDesc" as const,
-    icon: Store,
-  },
-  {
-    href: "/merchant/video-categories",
-    labelKey: "quickVideos" as const,
-    descKey: "quickVideosDesc" as const,
-    icon: Film,
-  },
-  {
-    href: "/merchant/support",
-    labelKey: "quickSupport" as const,
-    descKey: "quickSupportDesc" as const,
-    icon: LifeBuoy,
-  },
-];
+function greetingKey(hour: number) {
+  if (hour < 12) return "goodMorning" as const;
+  if (hour < 18) return "goodAfternoon" as const;
+  return "goodEvening" as const;
+}
+
+function statusStyles(status: string) {
+  switch (status) {
+    case "COMPLETED":
+      return "bg-[#e7f0e8] text-[#2f6b3c]";
+    case "NEW":
+      return "bg-[#e8eef8] text-[#2f5aa0]";
+    case "PROCESSING":
+      return "bg-[#f8efe4] text-[#a05a20]";
+    default:
+      return "bg-slate-100 text-slate-600";
+  }
+}
+
+function VisitsChart({
+  points,
+}: {
+  points: { label: string; value: number }[];
+}) {
+  const width = 420;
+  const height = 160;
+  const padX = 12;
+  const padY = 16;
+  const max = Math.max(1, ...points.map((p) => p.value));
+  const min = Math.min(...points.map((p) => p.value)) * 0.85;
+  const span = Math.max(1, max - min);
+
+  const coords = points.map((p, i) => {
+    const x =
+      padX + (i / Math.max(1, points.length - 1)) * (width - padX * 2);
+    const y =
+      height - padY - ((p.value - min) / span) * (height - padY * 2);
+    return { x, y, label: p.label };
+  });
+
+  const line = coords
+    .map((c, i) => `${i === 0 ? "M" : "L"} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`)
+    .join(" ");
+  const area = `${line} L ${coords[coords.length - 1]?.x ?? 0} ${height - padY} L ${coords[0]?.x ?? 0} ${height - padY} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-40 w-full">
+      <defs>
+        <linearGradient id="deskVisitsFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#3d7a4a" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#3d7a4a" stopOpacity="0.02" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#deskVisitsFill)" />
+      <path
+        d={line}
+        fill="none"
+        stroke="#3d7a4a"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {coords.map((c) => (
+        <circle
+          key={c.label}
+          cx={c.x}
+          cy={c.y}
+          r="3.5"
+          fill="#fff"
+          stroke="#3d7a4a"
+          strokeWidth="2"
+        />
+      ))}
+    </svg>
+  );
+}
 
 export function MerchantDashboardView({
   data,
@@ -78,273 +90,164 @@ export function MerchantDashboardView({
   data: MerchantCmsDashboardData;
 }) {
   const t = useTranslations("merchant.dashboard");
+  const tDesk = useTranslations("merchant.desk");
   const locale = useLocale();
   const isAr = locale === "ar";
-  const firstName = data.welcomeName.split(" ")[0] || "Admin";
+  const firstName = data.welcomeName.split(" ")[0] || "Ahmad";
+  const hour = useMemo(() => new Date().getHours(), []);
 
-  const cards = [
+  const kpis = [
     {
-      key: "sections",
-      label: t("totalSections"),
-      value: data.stats.sections,
-      icon: LayoutGrid,
-      href: "/merchant/sections",
-      dark: false,
+      key: "orders",
+      label: t("kpiOrders"),
+      value: formatNumber(data.stats.orders, locale),
+      change: data.changes.orders,
+      href: "/merchant/orders",
     },
     {
-      key: "categories",
-      label: t("totalCategories"),
-      value: data.stats.categories,
-      icon: Package,
-      href: "/merchant/products",
-      dark: false,
+      key: "sales",
+      label: t("kpiSales"),
+      value: `SAR ${formatNumber(data.stats.sales, locale)}`,
+      change: data.changes.sales,
+      href: "/merchant/orders",
     },
     {
-      key: "notifications",
-      label: t("totalNotifications"),
-      value: data.stats.notifications,
-      icon: Bell,
-      href: "/merchant/notices",
-      dark: false,
+      key: "customers",
+      label: t("kpiNewCustomers"),
+      value: formatNumber(data.stats.newCustomers, locale),
+      change: data.changes.newCustomers,
+      href: "/merchant/customers",
     },
     {
       key: "visits",
-      label: t("totalVisits"),
-      value: data.stats.visits,
-      icon: Smartphone,
-      href: "/merchant/dashboard",
-      dark: true,
+      label: t("kpiAppVisits"),
+      value: formatNumber(data.stats.visits, locale),
+      change: data.changes.visits,
+      href: "/merchant/sections",
     },
   ];
 
-  const weeklyRows = data.weeklyVisits;
-  const maxVisitors = Math.max(1, ...weeklyRows.map((r) => r.visitors));
+  const chartPoints = data.weeklyVisits.map((row) => ({
+    label: isAr ? row.dayLabelAr : row.dayLabelEn,
+    value: row.visitors,
+  }));
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-border bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">
-              {t("welcome", { name: firstName })}
-            </h2>
-            <p className="max-w-2xl text-sm text-slate-600">{t("subtitle")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/merchant/notices">
-              <Button variant="outline" className="gap-2">
-                <Bell className="h-4 w-4" />
-                {t("ctaNotices")}
-              </Button>
-            </Link>
-            <Link href="/merchant/app-order">
-              <Button className="gap-2 bg-[#4a4038] hover:bg-[#3a322c]">
-                <PlusCircle className="h-4 w-4" />
-                {t("requestAppCta")}
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Link
-              key={card.key}
-              href={card.href}
-              className={cn(
-                "flex items-center justify-between gap-3 rounded-2xl px-5 py-6 shadow-sm transition hover:scale-[1.01] hover:shadow-md",
-                card.dark
-                  ? "bg-[#4a4038] text-white"
-                  : "bg-[#ececec] text-slate-800"
-              )}
-            >
-              <div>
-                <p
-                  className={cn(
-                    "text-3xl font-semibold tabular-nums leading-none",
-                    card.dark ? "text-white" : "text-slate-900"
-                  )}
-                >
-                  {formatNumber(card.value, locale)}
-                </p>
-                <p
-                  className={cn(
-                    "mt-2 text-sm font-medium",
-                    card.dark ? "text-white/85" : "text-slate-600"
-                  )}
-                >
-                  {card.label}
-                </p>
-                <p
-                  className={cn(
-                    "mt-1 text-xs",
-                    card.dark ? "text-white/60" : "text-slate-500"
-                  )}
-                >
-                  {t("tapToOpen")}
-                </p>
-              </div>
-              <div
-                className={cn(
-                  "flex h-14 w-14 items-center justify-center rounded-2xl",
-                  card.dark ? "bg-white/10" : "bg-white text-slate-600"
-                )}
-              >
-                <Icon className="h-7 w-7" />
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-
-      <Link
-        href="/merchant/banners"
-        className="flex items-center justify-between gap-3 rounded-2xl bg-[#ececec] px-5 py-6 shadow-sm transition hover:scale-[1.01] hover:shadow-md"
-      >
-        <div>
-          <p className="text-3xl font-semibold tabular-nums leading-none text-slate-900">
-            {formatNumber(data.stats.banners, locale)}
+      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-desk-green">
+            {t(greetingKey(hour), { name: firstName })}
           </p>
-          <p className="mt-2 text-sm font-medium text-slate-600">
-            {t("totalBanners")}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">{t("tapToOpen")}</p>
+          <h2 className="text-3xl font-semibold tracking-tight text-desk-ink">
+            {t("todayAtStore")}
+          </h2>
+          <p className="max-w-xl text-sm text-desk-muted">{t("deskSubtitle")}</p>
         </div>
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-slate-600">
-          <ImageIcon className="h-7 w-7" />
-        </div>
-      </Link>
-
-      <section className="space-y-3">
-        <div>
-          <h3 className="text-base font-semibold text-slate-800">
-            {t("quickActions")}
-          </h3>
-          <p className="text-sm text-muted-foreground">{t("quickActionsHint")}</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {QUICK_ACTIONS.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link
-                key={action.href}
-                href={action.href}
-                className="group rounded-xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/40 hover:bg-muted/40"
-              >
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-primary transition group-hover:bg-primary/10">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <p className="text-sm font-medium text-foreground">
-                  {t(action.labelKey)}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                  {t(action.descKey)}
-                </p>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Card className="rounded-2xl border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-800">
-              {t("weeklyVisitors")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {weeklyRows.map((row) => {
-              const pct = Math.round((row.visitors / maxVisitors) * 100);
-              return (
-                <div key={row.dayKey} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-700">
-                      {isAr ? row.dayLabelAr : row.dayLabelEn}
-                    </span>
-                    <span className="font-medium tabular-nums text-slate-900">
-                      {formatNumber(row.visitors, locale)}
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className="h-full rounded-full bg-[#4a4038]/80 transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-0 shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-800">
-              {t("gettingStarted")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[
-              {
-                step: "1",
-                title: t("stepStore"),
-                href: "/merchant/store",
-                icon: Store,
-              },
-              {
-                step: "2",
-                title: t("stepContent"),
-                href: "/merchant/banners",
-                icon: ImageIcon,
-              },
-              {
-                step: "3",
-                title: t("stepNotices"),
-                href: "/merchant/notices",
-                icon: Bell,
-              },
-              {
-                step: "4",
-                title: t("stepVideos"),
-                href: "/merchant/videos/explore",
-                icon: Play,
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.step}
-                  href={item.href}
-                  className="flex items-center gap-3 rounded-xl border border-border px-3 py-3 transition hover:bg-muted/50"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#4a4038] text-xs font-semibold text-white">
-                    {item.step}
-                  </span>
-                  <span className="flex-1 text-sm font-medium text-slate-800">
-                    {item.title}
-                  </span>
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="font-semibold text-slate-900">{t("requestAppTitle")}</p>
-          <p className="mt-1 text-sm text-slate-600">{t("requestAppSubtitle")}</p>
-        </div>
-        <Link href="/merchant/app-order">
-          <Button className="bg-[#4a4038] hover:bg-[#3a322c]">
-            {t("requestAppCta")}
-          </Button>
+        <Link
+          href="/merchant/app"
+          className="inline-flex items-center justify-center rounded-full bg-desk-green px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#346940] lg:hidden"
+        >
+          {tDesk("customizeApp")}
         </Link>
+      </section>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((kpi) => (
+          <Link
+            key={kpi.key}
+            href={kpi.href}
+            className="rounded-[1.35rem] border border-[#e7e2d6] bg-white p-4 shadow-[0_1px_0_rgba(27,43,33,0.03)] transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <p className="text-sm text-desk-muted">{kpi.label}</p>
+            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-desk-ink">
+              {kpi.value}
+            </p>
+            <p className="mt-2 text-xs font-medium text-desk-green">
+              +{kpi.change}% {t("vsYesterday")}
+            </p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <section className="rounded-[1.6rem] border border-[#e7e2d6] bg-white p-5 shadow-[0_1px_0_rgba(27,43,33,0.03)]">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div>
+              <p className="font-semibold text-desk-ink">{t("appStatus")}</p>
+              <p className="text-xs text-desk-muted">{t("appStatusHint")}</p>
+            </div>
+            <Link
+              href="/merchant/app"
+              className="rounded-full bg-desk-green-soft px-3 py-1.5 text-xs font-medium text-desk-green"
+            >
+              {tDesk("customizeApp")}
+            </Link>
+          </div>
+          <div className="flex justify-center rounded-[1.4rem] bg-[radial-gradient(ellipse_at_center,#fffdf8_0%,#f3f1ea_70%)] px-4 py-8">
+            <LiveAppPhone
+              storeName={data.storeName}
+              isAr={isAr}
+              size="sm"
+            />
+          </div>
+        </section>
+
+        <div className="space-y-4">
+          <section className="rounded-[1.6rem] border border-[#e7e2d6] bg-white p-5 shadow-[0_1px_0_rgba(27,43,33,0.03)]">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-semibold text-desk-ink">{t("visitsChart")}</p>
+              <p className="text-xs text-desk-muted">{t("last7Days")}</p>
+            </div>
+            <VisitsChart points={chartPoints} />
+            <div className="mt-1 flex justify-between px-1 text-[11px] text-desk-muted">
+              {chartPoints.map((p) => (
+                <span key={p.label}>{p.label}</span>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-[1.6rem] border border-[#e7e2d6] bg-white p-5 shadow-[0_1px_0_rgba(27,43,33,0.03)]">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-semibold text-desk-ink">{t("latestOrders")}</p>
+              <Link
+                href="/merchant/orders"
+                className="text-xs font-medium text-desk-green hover:underline"
+              >
+                {t("viewAll")}
+              </Link>
+            </div>
+            <ul className="space-y-2.5">
+              {data.latestOrders.map((order) => (
+                <li
+                  key={order.id}
+                  className="flex items-center gap-3 rounded-2xl bg-[#f7f5ef] px-3 py-2.5"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-desk-ink">
+                        {order.orderNumber}
+                      </p>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusStyles(order.status)}`}
+                      >
+                        {t(`orderStatus.${order.status}`)}
+                      </span>
+                    </div>
+                    <p className="truncate text-xs text-desk-muted">
+                      {order.customerName}
+                      <span className="mx-1.5 text-[#c5bfb2]">·</span>
+                      {isAr ? order.timeLabelAr : order.timeLabelEn}
+                    </p>
+                  </div>
+                  <p className="shrink-0 text-sm font-semibold tabular-nums text-desk-ink">
+                    SAR {formatNumber(order.total, locale)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
   );
