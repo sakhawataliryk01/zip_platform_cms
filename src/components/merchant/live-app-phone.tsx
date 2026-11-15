@@ -10,6 +10,7 @@ import {
   Heart,
   Home,
   MapPin,
+  Megaphone,
   Minus,
   Play,
   Plus,
@@ -20,6 +21,7 @@ import {
   Trash2,
   User,
   Wifi,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStyle } from "@/components/merchant/app-style-provider";
@@ -167,7 +169,19 @@ export function LiveAppPhone({
     (isAr ? preview.storeNameAr : preview.storeNameEn) ||
     storeName ||
     "Al Noor Store";
-  const promo = isAr ? preview.promoTextAr : preview.promoTextEn;
+  const activeBar =
+    preview.announcementBars?.find((b) => b.visible) ||
+    preview.announcementBars?.[0];
+  const promo = activeBar
+    ? isAr
+      ? activeBar.textAr
+      : activeBar.textEn
+    : isAr
+      ? preview.promoTextAr
+      : preview.promoTextEn;
+  const announcementBold = preview.announcementBold ?? true;
+  const announcementShowIcon = preview.announcementShowIcon ?? false;
+  const announcementDismissible = preview.announcementDismissible ?? false;
   const heroTitle = isAr ? preview.heroTitleAr : preview.heroTitleEn;
   const heroHint = isAr ? preview.heroHintAr : preview.heroHintEn;
 
@@ -215,17 +229,36 @@ export function LiveAppPhone({
   const renderHomeBlocks = (id: PreviewBlockId) => {
     switch (id) {
       case "announcement": {
-        const base = "text-center text-[9px] font-semibold";
+        if (!promo) return null;
+        const weight = announcementBold ? "font-semibold" : "font-medium";
+        const label = (
+          <span className="inline-flex items-center justify-center gap-1">
+            {announcementShowIcon ? (
+              <Megaphone className="h-2.5 w-2.5 shrink-0 opacity-90" />
+            ) : null}
+            <span>{promo}</span>
+          </span>
+        );
+        const dismiss = announcementDismissible ? (
+          <X className="ms-1 h-2.5 w-2.5 shrink-0 opacity-80" />
+        ) : null;
+        const base = cn("text-center text-[9px]", weight);
         if (preview.announcementStyle === "marquee") {
           return (
             <div
               key={id}
-              className={cn(base, "overflow-hidden whitespace-nowrap px-2 py-1.5")}
+              className={cn(
+                base,
+                "flex items-center justify-between gap-1 overflow-hidden whitespace-nowrap px-2 py-1.5"
+              )}
               style={{ backgroundColor: promoBg, color: promoFg }}
             >
-              <span className="inline-block animate-desk-marquee">
-                {promo} · {promo} · {promo}
+              <span className="min-w-0 flex-1 overflow-hidden">
+                <span className="inline-block animate-desk-marquee">
+                  {promo} · {promo} · {promo}
+                </span>
               </span>
+              {dismiss}
             </div>
           );
         }
@@ -233,14 +266,18 @@ export function LiveAppPhone({
           return (
             <div key={id} className="px-1 pt-1">
               <div
-                className={cn(base, "rounded-xl border-2 px-3 py-1.5")}
+                className={cn(
+                  base,
+                  "flex items-center justify-center gap-1 rounded-xl border-2 px-3 py-1.5"
+                )}
                 style={{
                   borderColor: promoBg,
                   color: promoBg,
                   backgroundColor: `${promoBg}12`,
                 }}
               >
-                {promo}
+                {label}
+                {dismiss}
               </div>
             </div>
           );
@@ -249,10 +286,14 @@ export function LiveAppPhone({
           return (
             <div key={id} className="flex justify-center pt-1">
               <span
-                className={cn(base, "rounded-md px-2.5 py-1")}
+                className={cn(
+                  base,
+                  "inline-flex items-center gap-1 rounded-md px-2.5 py-1"
+                )}
                 style={{ backgroundColor: promoBg, color: promoFg }}
               >
-                {promo}
+                {label}
+                {dismiss}
               </span>
             </div>
           );
@@ -260,10 +301,14 @@ export function LiveAppPhone({
         return (
           <div
             key={id}
-            className={cn(base, "rounded-full px-3 py-1.5")}
+            className={cn(
+              base,
+              "flex items-center justify-center gap-1 rounded-full px-3 py-1.5"
+            )}
             style={{ backgroundColor: promoBg, color: promoFg }}
           >
-            {promo}
+            {label}
+            {dismiss}
           </div>
         );
       }
