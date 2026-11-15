@@ -453,6 +453,7 @@ function ClassicDashboardLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const light = variant === "light";
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
