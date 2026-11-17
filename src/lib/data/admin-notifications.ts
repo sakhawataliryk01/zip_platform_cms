@@ -61,6 +61,8 @@ export async function createDesignRequestNotification(input: {
   designSummary: DesignSummary;
   presetKey: string;
   preview: AppPreviewConfig;
+  changeNote: string;
+  changeHints?: string[];
 }): Promise<AdminNotificationItem> {
   const local = await readLocal();
   const summaryKey = JSON.stringify(input.designSummary);
@@ -75,7 +77,15 @@ export async function createDesignRequestNotification(input: {
   );
 
   const title = `Design update from ${input.businessName}`;
-  const message = `${input.merchantName} wants this app design: ${formatDesignSummaryMessage(input.designSummary)}`;
+  const noteLine = input.changeNote.trim()
+    ? `Merchant note: ${input.changeNote.trim()}`
+    : "";
+  const message = [
+    `${input.merchantName} wants this app design: ${formatDesignSummaryMessage(input.designSummary)}`,
+    noteLine,
+  ]
+    .filter(Boolean)
+    .join(" — ");
 
   if (recentIdx >= 0) {
     const existing = local.notifications[recentIdx];
@@ -87,6 +97,8 @@ export async function createDesignRequestNotification(input: {
       designSummary: input.designSummary,
       presetKey: input.presetKey,
       preview: input.preview,
+      changeNote: input.changeNote.trim(),
+      changeHints: input.changeHints || [],
       createdAt: new Date().toISOString(),
       read: false,
     };
@@ -111,6 +123,8 @@ export async function createDesignRequestNotification(input: {
     designSummary: input.designSummary,
     presetKey: input.presetKey,
     preview: input.preview,
+    changeNote: input.changeNote.trim(),
+    changeHints: input.changeHints || [],
   };
   local.notifications.unshift(item);
   await writeLocal(local);

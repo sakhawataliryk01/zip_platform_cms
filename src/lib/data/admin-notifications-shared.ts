@@ -29,6 +29,9 @@ export type AdminNotificationItem = {
   /** Full App Studio preview so admin can render a live phone */
   preview?: AppPreviewConfig;
   presetKey?: string;
+  /** Merchant-written note describing what they changed */
+  changeNote?: string;
+  changeHints?: string[];
 };
 
 export function formatDesignSummaryMessage(summary: DesignSummary): string {

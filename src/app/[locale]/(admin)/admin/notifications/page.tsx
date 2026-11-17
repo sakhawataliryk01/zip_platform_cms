@@ -216,6 +216,28 @@ export default function AdminNotificationsPage() {
                       <p className="mt-2 text-sm text-muted-foreground">
                         {n.message}
                       </p>
+                      {n.changeNote ? (
+                        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                            {t("merchantNote")}
+                          </p>
+                          <p className="mt-1 text-sm font-medium text-foreground whitespace-pre-wrap">
+                            {n.changeNote}
+                          </p>
+                        </div>
+                      ) : null}
+                      {n.changeHints && n.changeHints.length > 0 ? (
+                        <div className="mt-3 rounded-lg border border-border/70 bg-white/80 p-3">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                            {t("detectedChanges")}
+                          </p>
+                          <ul className="mt-1 list-disc space-y-0.5 ps-4 text-xs text-foreground">
+                            {n.changeHints.map((hint) => (
+                              <li key={hint}>{hint}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
                       {n.designSummary ? (
                         <div className="mt-3 grid gap-2 rounded-lg border border-border/70 bg-white/80 p-3 text-xs sm:grid-cols-2">
                           <Detail
