@@ -22,6 +22,13 @@ export type ProductCardStyle = "photo" | "price" | "discount" | "rating";
 export type AnnouncementStyle = "pill" | "marquee" | "frame" | "tag";
 export type CategoryLayout = "row" | "round" | "square";
 
+export type AnnouncementBarItem = {
+  id: string;
+  textEn: string;
+  textAr: string;
+  visible: boolean;
+};
+
 export type AppPreviewConfig = {
   storeNameEn: string;
   storeNameAr: string;
@@ -38,6 +45,10 @@ export type AppPreviewConfig = {
   headerStyle: string;
   bottomBarStyle: string;
   announcementStyle: AnnouncementStyle;
+  announcementShowIcon: boolean;
+  announcementBold: boolean;
+  announcementDismissible: boolean;
+  announcementBars: AnnouncementBarItem[];
   categoryLayout: CategoryLayout;
   productCardStyle: ProductCardStyle;
   bannerLayoutId: number;
@@ -60,7 +71,7 @@ export const DEFAULT_PREVIEW_CONFIG: AppPreviewConfig = {
   storeNameEn: "Al Noor Store",
   storeNameAr: "متجر النور",
   promoTextEn: "Use 10% off now",
-  promoTextAr: "استخدم خصم 10٪ الآن",
+  promoTextAr: "استخدم خصم ١٠٪ الآن",
   heroTitleEn: "Today's offers",
   heroTitleAr: "عروض اليوم",
   heroHintEn: "Up to 50% off, and delivery is fast",
@@ -72,6 +83,23 @@ export const DEFAULT_PREVIEW_CONFIG: AppPreviewConfig = {
   headerStyle: "classic",
   bottomBarStyle: "labeled",
   announcementStyle: "pill",
+  announcementShowIcon: false,
+  announcementBold: true,
+  announcementDismissible: false,
+  announcementBars: [
+    {
+      id: "bar-1",
+      textEn: "Use 10% off now",
+      textAr: "استخدم خصم ١٠٪ الآن",
+      visible: true,
+    },
+    {
+      id: "bar-2",
+      textEn: "Cash on delivery in Riyadh and Jeddah",
+      textAr: "الدفع عند الاستلام متاح في الرياض وجدة",
+      visible: false,
+    },
+  ],
   categoryLayout: "row",
   productCardStyle: "discount",
   bannerLayoutId: 14,
@@ -261,6 +289,9 @@ export function parsePreviewConfig(raw: string | null): AppPreviewConfig | null 
       hiddenHomeSections: Array.isArray(parsed.hiddenHomeSections)
         ? (parsed.hiddenHomeSections as HomeSectionId[])
         : DEFAULT_PREVIEW_CONFIG.hiddenHomeSections,
+      announcementBars: Array.isArray(parsed.announcementBars)
+        ? (parsed.announcementBars as AnnouncementBarItem[])
+        : DEFAULT_PREVIEW_CONFIG.announcementBars,
     };
     return syncBlocksFromHome(merged);
   } catch {

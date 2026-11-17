@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import {
   APP_PHONE_STYLES,
   APP_STYLE_STORAGE_KEY,
@@ -27,6 +28,8 @@ import {
   type HomeSectionId,
   type PreviewBlockId,
 } from "@/lib/app-preview-config";
+import { describeDesignChanges } from "@/lib/design-change-hints";
+import { DesignChangeNoteModal } from "@/components/merchant/design-change-note-modal";
 
 type AppStyleContextValue = {
   presetKey: AppStylePresetKey;
@@ -41,6 +44,12 @@ type AppStyleContextValue = {
   ready: boolean;
 };
 
+type PendingNotify = {
+  presetKey: AppStylePresetKey;
+  preview: AppPreviewConfig;
+  changes: string[];
+};
+
 const AppStyleContext = createContext<AppStyleContextValue | null>(null);
 
 export function AppStyleProvider({ children }: { children: React.ReactNode }) {
@@ -48,7 +57,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
     useState<AppStylePresetKey>(DEFAULT_APP_STYLE);
   const [preview, setPreview] = useState<AppPreviewConfig>(DEFAULT_PREVIEW_CONFIG);
   const [ready, setReady] = useState(false);
+  const [pendingNotify, setPendingNotify] = useState<PendingNotify | null>(null);
+  const [submittingNote, setSubmittingNote] = useState(false);
   const presetKeyRef = useRef<AppStylePresetKey>(DEFAULT_APP_STYLE);
+  const previewRef = useRef<AppPreviewConfig>(DEFAULT_PREVIEW_CONFIG);
+  const lastSnapshotRef = useRef<PendingNotify | null>(null);
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNotify = useRef(true);
 
@@ -62,7 +75,15 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
       const savedPreview = parsePreviewConfig(
         window.localStorage.getItem(APP_PREVIEW_STORAGE_KEY)
       );
-      if (savedPreview) setPreview(savedPreview);
+      if (savedPreview) {
+        setPreview(savedPreview);
+        previewRef.current = savedPreview;
+      }
+      lastSnapshotRef.current = {
+        presetKey: presetKeyRef.current,
+        preview: previewRef.current,
+        changes: [],
+      };
     } catch {
       // ignore
     }
@@ -73,19 +94,35 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(unlock);
   }, []);
 
-  const notifyAdminOfDesign = useCallback(
+  const queueDesignNotePrompt = useCallback(
     (key: AppStylePresetKey, next: AppPreviewConfig) => {
       if (skipNotify.current) return;
       if (notifyTimer.current) clearTimeout(notifyTimer.current);
       notifyTimer.current = setTimeout(() => {
-        fetch("/api/merchant/app-design", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ presetKey: key, preview: next }),
-        }).catch(() => {
-          // ignore network errors — local preview still works
+        const changes = describeDesignChanges(lastSnapshotRef.current, {
+          presetKey: key,
+          preview: next,
         });
-      }, 1800);
+        setPendingNotify({ presetKey: key, preview: next, changes });
+      }, 1200);
+    },
+    []
+  );
+
+  const persistLocal = useCallback(
+    (key: AppStylePresetKey, next: AppPreviewConfig) => {
+      try {
+        window.localStorage.setItem(APP_STYLE_STORAGE_KEY, key);
+        window.localStorage.setItem(APP_PREVIEW_STORAGE_KEY, JSON.stringify(next));
+        window.dispatchEvent(
+          new CustomEvent("merchant-app-style-change", { detail: key })
+        );
+        window.dispatchEvent(
+          new CustomEvent("merchant-app-preview-change", { detail: next })
+        );
+      } catch {
+        // ignore
+      }
     },
     []
   );
@@ -96,48 +133,26 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
       presetKeyRef.current = key;
       setPreview((current) => {
         const next = applyPresetToPreview(key, current);
-        try {
-          window.localStorage.setItem(APP_STYLE_STORAGE_KEY, key);
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-style-change", { detail: key })
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(key, next);
+        previewRef.current = next;
+        persistLocal(key, next);
+        queueDesignNotePrompt(key, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
   );
 
   const updatePreview = useCallback(
     (patch: Partial<AppPreviewConfig>) => {
       setPreview((current) => {
         const next = { ...current, ...patch };
-        try {
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(presetKeyRef.current, next);
+        previewRef.current = next;
+        persistLocal(presetKeyRef.current, next);
+        queueDesignNotePrompt(presetKeyRef.current, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
   );
 
   const toggleBlock = useCallback(
@@ -147,22 +162,13 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
           ? current.hiddenBlocks.filter((b) => b !== id)
           : [...current.hiddenBlocks, id];
         const next = { ...current, hiddenBlocks: hidden };
-        try {
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(presetKeyRef.current, next);
+        previewRef.current = next;
+        persistLocal(presetKeyRef.current, next);
+        queueDesignNotePrompt(presetKeyRef.current, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
   );
 
   const moveBlock = useCallback(
@@ -175,22 +181,13 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         if (target < 0 || target >= order.length) return current;
         [order[index], order[target]] = [order[target], order[index]];
         const next = { ...current, blockOrder: order };
-        try {
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(presetKeyRef.current, next);
+        previewRef.current = next;
+        persistLocal(presetKeyRef.current, next);
+        queueDesignNotePrompt(presetKeyRef.current, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
   );
 
   const toggleHomeSection = useCallback(
@@ -202,22 +199,13 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = withHomeSectionChange(current, {
           hiddenHomeSections: hidden,
         });
-        try {
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(presetKeyRef.current, next);
+        previewRef.current = next;
+        persistLocal(presetKeyRef.current, next);
+        queueDesignNotePrompt(presetKeyRef.current, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
   );
 
   const moveHomeSection = useCallback(
@@ -230,41 +218,78 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         if (target < 0 || target >= order.length) return current;
         [order[index], order[target]] = [order[target], order[index]];
         const next = withHomeSectionChange(current, { homeSections: order });
-        try {
-          window.localStorage.setItem(
-            APP_PREVIEW_STORAGE_KEY,
-            JSON.stringify(next)
-          );
-          window.dispatchEvent(
-            new CustomEvent("merchant-app-preview-change", { detail: next })
-          );
-        } catch {
-          // ignore
-        }
-        notifyAdminOfDesign(presetKeyRef.current, next);
+        previewRef.current = next;
+        persistLocal(presetKeyRef.current, next);
+        queueDesignNotePrompt(presetKeyRef.current, next);
         return next;
       });
     },
-    [notifyAdminOfDesign]
+    [persistLocal, queueDesignNotePrompt]
+  );
+
+  const submitChangeNote = useCallback(
+    async (note: string) => {
+      if (!pendingNotify) return;
+      setSubmittingNote(true);
+      try {
+        const res = await fetch("/api/merchant/app-design", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            presetKey: pendingNotify.presetKey,
+            preview: pendingNotify.preview,
+            changeNote: note,
+            changeHints: pendingNotify.changes,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          toast.error(data.error || "Could not send design note");
+          return;
+        }
+        lastSnapshotRef.current = {
+          presetKey: pendingNotify.presetKey,
+          preview: pendingNotify.preview,
+          changes: [],
+        };
+        setPendingNotify(null);
+        toast.success("Design note sent to admin");
+      } catch {
+        toast.error("Could not send design note");
+      } finally {
+        setSubmittingNote(false);
+      }
+    },
+    [pendingNotify]
   );
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
       if (e.key === APP_STYLE_STORAGE_KEY && isAppStylePresetKey(e.newValue)) {
         setPresetKeyState(e.newValue);
+        presetKeyRef.current = e.newValue;
       }
       if (e.key === APP_PREVIEW_STORAGE_KEY) {
         const parsed = parsePreviewConfig(e.newValue);
-        if (parsed) setPreview(parsed);
+        if (parsed) {
+          setPreview(parsed);
+          previewRef.current = parsed;
+        }
       }
     };
     const onStyle = (e: Event) => {
       const detail = (e as CustomEvent<string>).detail;
-      if (isAppStylePresetKey(detail)) setPresetKeyState(detail);
+      if (isAppStylePresetKey(detail)) {
+        setPresetKeyState(detail);
+        presetKeyRef.current = detail;
+      }
     };
     const onPreview = (e: Event) => {
       const detail = (e as CustomEvent<AppPreviewConfig>).detail;
-      if (detail) setPreview(detail);
+      if (detail) {
+        setPreview(detail);
+        previewRef.current = detail;
+      }
     };
     window.addEventListener("storage", onStorage);
     window.addEventListener("merchant-app-style-change", onStyle);
@@ -303,7 +328,16 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <AppStyleContext.Provider value={value}>{children}</AppStyleContext.Provider>
+    <AppStyleContext.Provider value={value}>
+      {children}
+      <DesignChangeNoteModal
+        open={Boolean(pendingNotify)}
+        changes={pendingNotify?.changes || []}
+        submitting={submittingNote}
+        onClose={() => setPendingNotify(null)}
+        onSubmit={submitChangeNote}
+      />
+    </AppStyleContext.Provider>
   );
 }
 

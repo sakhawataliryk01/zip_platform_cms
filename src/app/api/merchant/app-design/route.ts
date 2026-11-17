@@ -35,9 +35,19 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const presetKey = String(body?.presetKey || "amazon") as AppStylePresetKey;
   const preview = body?.preview as AppPreviewConfig | undefined;
+  const changeNote = String(body?.changeNote || "").trim();
+  const changeHints = Array.isArray(body?.changeHints)
+    ? body.changeHints.map((h: unknown) => String(h)).filter(Boolean)
+    : [];
 
   if (!preview || typeof preview !== "object") {
     return NextResponse.json({ error: "preview required" }, { status: 400 });
+  }
+  if (changeNote.length < 3) {
+    return NextResponse.json(
+      { error: "changeNote required" },
+      { status: 400 }
+    );
   }
 
   const designSummary = toSummary(presetKey, preview);
@@ -48,6 +58,8 @@ export async function POST(request: NextRequest) {
     designSummary,
     presetKey,
     preview,
+    changeNote,
+    changeHints,
   });
 
   return NextResponse.json({

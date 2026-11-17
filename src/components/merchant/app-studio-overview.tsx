@@ -25,7 +25,7 @@ const TOOLS = [
   { key: "productCards", href: "/merchant/app/cards", icon: LayoutGrid },
   { key: "categories", href: "/merchant/app/categories", icon: Tags },
   { key: "introPosters", href: "/merchant/intro-posters", icon: Images },
-  { key: "announcementBar", href: "/merchant/app-content", icon: Megaphone },
+  { key: "announcementBar", href: "/merchant/app/announcement", icon: Megaphone },
   { key: "reels", href: "/merchant/video-categories", icon: Clapperboard },
 ] as const;
 

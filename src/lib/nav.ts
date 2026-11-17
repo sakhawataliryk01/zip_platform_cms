@@ -96,6 +96,7 @@ export const APP_STUDIO_PATHS = [
   "/merchant/app/banners",
   "/merchant/app/cards",
   "/merchant/app/categories",
+  "/merchant/app/announcement",
   "/merchant/sections",
   "/merchant/banners",
   "/merchant/app-content",
@@ -116,6 +117,7 @@ export const merchantAppStudioEditorNav: {
   { href: "/merchant/app/banners", labelKey: "banners" },
   { href: "/merchant/app/cards", labelKey: "productCards" },
   { href: "/merchant/app/categories", labelKey: "categories" },
+  { href: "/merchant/app/announcement", labelKey: "announcementBar" },
 ];
 
 export const adminNavItems: NavItemConfig[] = [
