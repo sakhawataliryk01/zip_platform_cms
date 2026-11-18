@@ -14,6 +14,7 @@ import { EmptyState, LoadingState } from "@/components/shared/empty-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { formatDate } from "@/lib/utils";
 import type { BannerItem, ContentStatus } from "@/lib/data/banner-shared";
+import { notifyMerchantBannersChanged } from "@/hooks/use-merchant-banners";
 import { MAX_BANNERS } from "@/lib/data/banner-shared";
 
 const emptyForm = {
@@ -130,6 +131,7 @@ export function BannersManager() {
       toast.success(tCommon("success"));
       resetForm();
       await load();
+      notifyMerchantBannersChanged();
     } catch {
       toast.error(tCommon("error"));
     } finally {
@@ -153,6 +155,7 @@ export function BannersManager() {
       setDeleteId(null);
       if (editingId === deleteId) resetForm();
       await load();
+      notifyMerchantBannersChanged();
     } catch {
       toast.error(tCommon("error"));
     }
