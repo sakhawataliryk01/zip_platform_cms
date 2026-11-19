@@ -691,16 +691,6 @@
       "livePreview": "Live preview",
       "previewUpdatesHint": "Edits on the right update this phone instantly — and across the desk.",
       "liveEditHint": "Changes apply to the live phone immediately.",
-      "changeNote": {
-        "title": "What did you change?",
-        "subtitle": "Write a short note for the admin team so they know exactly what look you want.",
-        "detected": "Detected changes",
-        "label": "Please write what you changed",
-        "placeholder": "e.g. I changed the product cards to layout 24 and made the primary color darker.",
-        "later": "Later",
-        "send": "Send to admin",
-        "sending": "Sending..."
-      },
       "openFullPage": "Open full page →",
       "introPostersLiveHint": "Intro posters show on first app open. Manage assets from the full Intro posters page.",
       "fields": {
@@ -747,8 +737,21 @@
         },
         "banners": {
           "title": "Banners",
-          "subtitle": "Forty layouts. The photo, title, and button show in the preview.",
-          "gridTitle": "40 banner layouts"
+          "subtitle": "Upload your promo images, then pick a layout. Active banners appear in the live phone.",
+          "gridTitle": "40 banner layouts",
+          "uploadTitle": "Your banner images",
+          "uploadHint": "Upload up to 3 banners. Set one to Active so it shows in the live preview.",
+          "uploadBanner": "Upload banner",
+          "editBanner": "Edit banner",
+          "slotsUsed": "{count} / {max} slots used",
+          "emptyUpload": "Upload your first banner",
+          "emptyUploadHint": "JPG or PNG works best. The live phone updates right away.",
+          "noImage": "No image",
+          "active": "Active",
+          "inactive": "Inactive",
+          "pickImage": "No image yet",
+          "chooseImage": "Choose image",
+          "imageHint": "JPG, PNG, WEBP or GIF — max 5MB."
         },
         "cards": {
           "title": "Product cards",
