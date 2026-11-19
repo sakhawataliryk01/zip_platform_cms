@@ -9,7 +9,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
 import {
   APP_PHONE_STYLES,
   APP_STYLE_STORAGE_KEY,
@@ -29,7 +28,6 @@ import {
   type PreviewBlockId,
 } from "@/lib/app-preview-config";
 import { describeDesignChanges } from "@/lib/design-change-hints";
-import { DesignChangeNoteModal } from "@/components/merchant/design-change-note-modal";
 
 type AppStyleContextValue = {
   presetKey: AppStylePresetKey;
@@ -44,12 +42,6 @@ type AppStyleContextValue = {
   ready: boolean;
 };
 
-type PendingNotify = {
-  presetKey: AppStylePresetKey;
-  preview: AppPreviewConfig;
-  changes: string[];
-};
-
 const AppStyleContext = createContext<AppStyleContextValue | null>(null);
 
 export function AppStyleProvider({ children }: { children: React.ReactNode }) {
@@ -57,11 +49,12 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
     useState<AppStylePresetKey>(DEFAULT_APP_STYLE);
   const [preview, setPreview] = useState<AppPreviewConfig>(DEFAULT_PREVIEW_CONFIG);
   const [ready, setReady] = useState(false);
-  const [pendingNotify, setPendingNotify] = useState<PendingNotify | null>(null);
-  const [submittingNote, setSubmittingNote] = useState(false);
   const presetKeyRef = useRef<AppStylePresetKey>(DEFAULT_APP_STYLE);
   const previewRef = useRef<AppPreviewConfig>(DEFAULT_PREVIEW_CONFIG);
-  const lastSnapshotRef = useRef<PendingNotify | null>(null);
+  const lastSnapshotRef = useRef<{
+    presetKey: AppStylePresetKey;
+    preview: AppPreviewConfig;
+  } | null>(null);
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const skipNotify = useRef(true);
 
@@ -82,7 +75,6 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
       lastSnapshotRef.current = {
         presetKey: presetKeyRef.current,
         preview: previewRef.current,
-        changes: [],
       };
     } catch {
       // ignore
@@ -94,7 +86,7 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
     return () => window.clearTimeout(unlock);
   }, []);
 
-  const queueDesignNotePrompt = useCallback(
+  const notifyAdminOfDesign = useCallback(
     (key: AppStylePresetKey, next: AppPreviewConfig) => {
       if (skipNotify.current) return;
       if (notifyTimer.current) clearTimeout(notifyTimer.current);
@@ -103,8 +95,22 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
           presetKey: key,
           preview: next,
         });
-        setPendingNotify({ presetKey: key, preview: next, changes });
-      }, 1200);
+        fetch("/api/merchant/app-design", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            presetKey: key,
+            preview: next,
+            changeHints: changes,
+          }),
+        })
+          .then(() => {
+            lastSnapshotRef.current = { presetKey: key, preview: next };
+          })
+          .catch(() => {
+            // ignore network errors — local preview still works
+          });
+      }, 1800);
     },
     []
   );
@@ -135,11 +141,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = applyPresetToPreview(key, current);
         previewRef.current = next;
         persistLocal(key, next);
-        queueDesignNotePrompt(key, next);
+        notifyAdminOfDesign(key, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   const updatePreview = useCallback(
@@ -148,11 +154,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = { ...current, ...patch };
         previewRef.current = next;
         persistLocal(presetKeyRef.current, next);
-        queueDesignNotePrompt(presetKeyRef.current, next);
+        notifyAdminOfDesign(presetKeyRef.current, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   const toggleBlock = useCallback(
@@ -164,11 +170,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = { ...current, hiddenBlocks: hidden };
         previewRef.current = next;
         persistLocal(presetKeyRef.current, next);
-        queueDesignNotePrompt(presetKeyRef.current, next);
+        notifyAdminOfDesign(presetKeyRef.current, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   const moveBlock = useCallback(
@@ -183,11 +189,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = { ...current, blockOrder: order };
         previewRef.current = next;
         persistLocal(presetKeyRef.current, next);
-        queueDesignNotePrompt(presetKeyRef.current, next);
+        notifyAdminOfDesign(presetKeyRef.current, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   const toggleHomeSection = useCallback(
@@ -201,11 +207,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         });
         previewRef.current = next;
         persistLocal(presetKeyRef.current, next);
-        queueDesignNotePrompt(presetKeyRef.current, next);
+        notifyAdminOfDesign(presetKeyRef.current, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   const moveHomeSection = useCallback(
@@ -220,47 +226,11 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
         const next = withHomeSectionChange(current, { homeSections: order });
         previewRef.current = next;
         persistLocal(presetKeyRef.current, next);
-        queueDesignNotePrompt(presetKeyRef.current, next);
+        notifyAdminOfDesign(presetKeyRef.current, next);
         return next;
       });
     },
-    [persistLocal, queueDesignNotePrompt]
-  );
-
-  const submitChangeNote = useCallback(
-    async (note: string) => {
-      if (!pendingNotify) return;
-      setSubmittingNote(true);
-      try {
-        const res = await fetch("/api/merchant/app-design", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            presetKey: pendingNotify.presetKey,
-            preview: pendingNotify.preview,
-            changeNote: note,
-            changeHints: pendingNotify.changes,
-          }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          toast.error(data.error || "Could not send design note");
-          return;
-        }
-        lastSnapshotRef.current = {
-          presetKey: pendingNotify.presetKey,
-          preview: pendingNotify.preview,
-          changes: [],
-        };
-        setPendingNotify(null);
-        toast.success("Design note sent to admin");
-      } catch {
-        toast.error("Could not send design note");
-      } finally {
-        setSubmittingNote(false);
-      }
-    },
-    [pendingNotify]
+    [persistLocal, notifyAdminOfDesign]
   );
 
   useEffect(() => {
@@ -328,16 +298,7 @@ export function AppStyleProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <AppStyleContext.Provider value={value}>
-      {children}
-      <DesignChangeNoteModal
-        open={Boolean(pendingNotify)}
-        changes={pendingNotify?.changes || []}
-        submitting={submittingNote}
-        onClose={() => setPendingNotify(null)}
-        onSubmit={submitChangeNote}
-      />
-    </AppStyleContext.Provider>
+    <AppStyleContext.Provider value={value}>{children}</AppStyleContext.Provider>
   );
 }
 
