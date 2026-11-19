@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
@@ -31,6 +31,8 @@ import {
   isAppStylePresetKey,
   type AppStylePresetKey,
 } from "@/lib/app-style-presets";
+import { useMerchantBanners } from "@/hooks/use-merchant-banners";
+import type { BannerItem } from "@/lib/data/banner-shared";
 
 type TabId = "home" | "categories" | "cart" | "profile";
 type Screen =
@@ -133,6 +135,7 @@ export function LiveAppPhone({
   showTapHint = true,
   previewOverride,
   presetKey: presetKeyOverride,
+  bannersOverride,
 }: {
   storeName?: string;
   isAr?: boolean;
@@ -143,6 +146,8 @@ export function LiveAppPhone({
   /** When set (e.g. admin viewing a merchant request), ignore local merchant style context */
   previewOverride?: AppPreviewConfig;
   presetKey?: AppStylePresetKey | string;
+  /** Optional banners (skips merchant API fetch when provided) */
+  bannersOverride?: BannerItem[];
 }) {
   const t = useTranslations("merchant.appStudio");
   const ctx = useAppStyle();
@@ -151,11 +156,35 @@ export function LiveAppPhone({
     presetKeyOverride && isAppStylePresetKey(presetKeyOverride)
       ? APP_PHONE_STYLES[presetKeyOverride]
       : ctx.style;
+  const { activeBanners: fetchedBanners } = useMerchantBanners(
+    !bannersOverride && !previewOverride
+  );
+  const activeBanners = useMemo(() => {
+    if (bannersOverride) {
+      return bannersOverride
+        .filter((b) => b.status === "ACTIVE" && b.imageUrl)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+    return fetchedBanners;
+  }, [bannersOverride, fetchedBanners]);
+  const [bannerIndex, setBannerIndex] = useState(0);
   const [screen, setScreen] = useState<Screen>({ name: "home" });
   const [cartQty, setCartQty] = useState<Record<string, number>>({
     "sw-pro": 1,
   });
   const [saved, setSaved] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    setBannerIndex(0);
+  }, [activeBanners.length]);
+
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
+    const id = window.setInterval(() => {
+      setBannerIndex((i) => (i + 1) % activeBanners.length);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, [activeBanners.length]);
 
   // Real-phone proportions (~9:19.5). Keep height fixed so content scrolls inside.
   const shell =
@@ -312,7 +341,79 @@ export function LiveAppPhone({
           </div>
         );
       }
-      case "hero":
+      case "hero": {
+        if (activeBanners.length > 0) {
+          const current =
+            activeBanners[bannerIndex % activeBanners.length] ||
+            activeBanners[0];
+          const title = isAr
+            ? current.titleAr || current.title
+            : current.title;
+          const layoutId = preview.bannerLayoutId || 1;
+          const tall = layoutId % 5 === 0 || layoutId === 14 || layoutId === 36;
+          const rounded =
+            layoutId % 3 === 0 ? "rounded-3xl" : "rounded-2xl";
+
+          return (
+            <div key={id} className="space-y-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  if (current.linkUrl && interactive) {
+                    // Keep interaction inside the phone; open product as fallback
+                    go({ name: "product", productId: "sw-pro" });
+                  } else {
+                    go({ name: "product", productId: "sw-pro" });
+                  }
+                }}
+                className={cn(
+                  "relative w-full overflow-hidden text-start shadow-sm transition active:scale-[0.99]",
+                  rounded,
+                  tall ? "h-[118px]" : "h-[96px]"
+                )}
+              >
+                <Image
+                  src={current.imageUrl!}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-2.5 text-white">
+                  <p className="line-clamp-2 text-[11px] font-semibold leading-snug">
+                    {title}
+                  </p>
+                  <span
+                    className="mt-1.5 inline-flex rounded-full px-2.5 py-0.5 text-[9px] font-semibold"
+                    style={{ backgroundColor: ctaBg, color: style.ctaText }}
+                  >
+                    {t("previewOrderNow")}
+                  </span>
+                </div>
+              </button>
+              {activeBanners.length > 1 ? (
+                <div className="flex items-center justify-center gap-1">
+                  {activeBanners.map((b, i) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      aria-label={`Banner ${i + 1}`}
+                      onClick={() => interactive && setBannerIndex(i)}
+                      className={cn(
+                        "h-1 rounded-full transition-all",
+                        i === bannerIndex % activeBanners.length
+                          ? "w-3 bg-desk-ink"
+                          : "w-1.5 bg-desk-ink/25"
+                      )}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        }
+
         return (
           <button
             key={id}
@@ -349,6 +450,7 @@ export function LiveAppPhone({
             </span>
           </button>
         );
+      }
       case "categories":
         return categoryLayout === "row" ? (
           <div key={id} className="space-y-1.5">

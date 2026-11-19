@@ -43,12 +43,6 @@ export async function POST(request: NextRequest) {
   if (!preview || typeof preview !== "object") {
     return NextResponse.json({ error: "preview required" }, { status: 400 });
   }
-  if (changeNote.length < 3) {
-    return NextResponse.json(
-      { error: "changeNote required" },
-      { status: 400 }
-    );
-  }
 
   const designSummary = toSummary(presetKey, preview);
   const notification = await createDesignRequestNotification({
